@@ -2,8 +2,8 @@
 <template>
     <div class="imServer-wrapper">
         <main class="imServer-main">
-            <im-record class="item im-record" @selectedChat="selectedChat()"></im-record>
-            <im-chat v-if="storeSelectedChatEn!=null" ref="im_chat" class="item im-chat"></im-chat>
+            <im-record :class="{record_show:recordShow}" class="item im-record" @selectedChat="selectedChat()" @toggleUserList = toggleUserList></im-record>
+            <im-chat v-if="storeSelectedChatEn!=null" ref="im_chat" class="item im-chat" @toggleUserList = toggleUserList></im-chat>
         </main>
     </div>
 </template>
@@ -19,6 +19,7 @@ export default {
     },
     data() {
         return {
+            recordShow:false,
             socket: null
         };
     },
@@ -29,6 +30,10 @@ export default {
     },
     watch: {},
     methods: {
+        //切换用户列表显示隐藏
+        toggleUserList(){
+            this.recordShow = !this.recordShow
+        },
         /**
          * 选中了会话
          */
@@ -49,7 +54,23 @@ export default {
 .imServer-wrapper {
     #common-wrapper();
 }
-
+@media only screen and (max-width: 550px) {
+    .im-record{
+        position: fixed;
+        width: 0 !important;
+        z-index: 1000;
+        background: #e6e6e6;
+        overflow: hidden;
+        left: 0;
+        top: 0;
+    }
+    .record_show{
+        width: 280px !important;
+    }
+    .im-chat {
+            width: 100% !important;
+        }
+}
 .imServer-wrapper {
     width: 100%;
     height: 100%;
@@ -65,7 +86,7 @@ export default {
             height: 100%;
         }
         & > .im-record {
-            width: 280px;
+            max-width: 280px;
         }
         & > .im-chat {
             width: calc(~'99% - 280px');

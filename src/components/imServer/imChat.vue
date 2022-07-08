@@ -3,6 +3,7 @@
     <div class="imChat-wrapper">
         <!-- 头部 -->
         <header class="imChat-header">
+            <i class="fa fa-indent" style="margin-right:15px" @click="toggleUserList()"></i>
             <span class="name">{{storeSelectedChatEn.clientChatName}}</span>
             <span class="time">{{getAccessTimeStr(storeSelectedChatEn.accessTime)}}</span>
             <span v-show="storeSelectedChatEn.state=='on' " class="on-line">在线</span>
@@ -45,6 +46,10 @@ export default {
         }
     },
     methods: {
+        //切换用户列表显示
+        toggleUserList(){
+            this.$emit('toggleUserList')
+        },
         /**
          * 发送消息
          * @param {Object} rs 回调对象

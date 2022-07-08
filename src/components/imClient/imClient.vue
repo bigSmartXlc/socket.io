@@ -370,15 +370,14 @@ export default {
 
 <style lang="less">
 @import '../../common/css/base.less';
-
 .imClient-wrapper {
     #common-wrapper();
 }
 
 .imClient-inner {
-    width: 850px;
+    max-width: 850px;
     height: 100%;
-    margin: 10px auto 0px;
+    margin: 0 auto;
     overflow: hidden;
     box-shadow: 0 1px 5px 2px #ccc;
     .imClient-header {
@@ -419,7 +418,8 @@ export default {
             }
         }
         & > .imClientChat-wrapper {
-            width: 550px;
+            max-width: 550px;
+            width: 100%;
             border-right: 1px solid #ccc;
         }
         & > .imClientInfo-wrapper {
@@ -427,7 +427,14 @@ export default {
         }
     }
 }
-
+@media only screen and (max-width: 550px) {
+    .imClientInfo-wrapper{
+        display: none;
+    }
+    .imClient-main {
+        height: 95vh !important
+    }
+}
 // 信息区域
 .imClientInfo-wrapper {
     width: 100%;
@@ -490,7 +497,8 @@ export default {
 
 // element-UI
 .el-dialog {
-    width: 500px;
+    width: 95%;
+    max-width: 500px;
     background: #ffffff;
     color: #000000;
 }

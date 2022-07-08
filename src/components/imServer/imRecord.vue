@@ -7,8 +7,7 @@
                 <span class="kf-name position-h-v-mid">{{storeServerChatEn.serverChatName}}</span>
             </div>
             <div class="client-info-wrapper">
-                <p>
-                    <i class="fa fa-user on-line"></i>{{storeCurrentChatEnlist.length}}</p>
+                <p><i class="fa fa-user on-line"></i>{{storeCurrentChatEnlist.length}}<i class="fa fa-dedent" style="margin-left:15px" @click="toggleUserList()"></i></p>
             </div>
         </header>
         <main class="main">
@@ -62,6 +61,10 @@ export default {
     },
     watch: {},
     methods: {
+               //切换用户列表显示
+        toggleUserList(){
+            this.$emit('toggleUserList')
+        },
         /**
          * 选中当前列表的chat
          * @param {Object} en call实体类
@@ -69,6 +72,7 @@ export default {
         selectChat: function(en) {
             this.$store.imServerStore.dispatch('selectChat', { clientChatId: en.clientChatId });
             this.$emit('selectedChat', {}); // 事件上传
+            this.$emit('toggleUserList')
         },
 
         /**
