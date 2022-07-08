@@ -8,6 +8,7 @@
                     <span v-else-if="chatInfoEn.chatState == 'agent'">您正在与客服{{serverChatEn.serverChatName}}对话</span>
                 </div>
                 <div class="opr-wrapper position-v-mid">
+                    <i class="fa fa-indent sm_Show" @click="toggleRightList()"></i>
                     <el-tooltip content="评分" placement="bottom" effect="light">
                         <i class="fa fa-star-half-full" @click="showRateDialog()"></i>
                     </el-tooltip>
@@ -26,10 +27,11 @@
                     <common-chat ref="common_chat" :chatInfoEn="chatInfoEn" :oprRoleName=" 'client'" @sendMsg="sendMsg" @chatCallback="chatCallback"></common-chat>
                 </div>
                 <!-- 信息区域 -->
-                <div class="item imClientInfo-wrapper">
+                <div class="item imClientInfo-wrapper" :class="{record_show:recordShow}">
                     <article class="imClientInfo-notice-wrapper">
                         <header class="imClientInfo-item-header">
                             公告
+                            <i class="fa fa-close info_close sm_Show" @click="toggleRightList()"></i>
                         </header>
                         <main class="imClientInfo-notice-main">
                             <p class="link">github：
@@ -94,6 +96,7 @@ export default {
     },
     data() {
         return {
+            recordShow:false,
             socket: null,
             chatInfoEn: {
                 chatState: 'robot', // chat状态；robot 机器人、agent 客服
@@ -135,6 +138,10 @@ export default {
     computed: {},
     watch: {},
     methods: {
+        //切换右侧信息
+        toggleRightList(){
+            this.recordShow = !this.recordShow
+        },
         /**
          * 注册账号信息
          */
@@ -423,16 +430,30 @@ export default {
             border-right: 1px solid #ccc;
         }
         & > .imClientInfo-wrapper {
-            width: 300px;
+           width: 300px;
         }
     }
 }
 @media only screen and (max-width: 550px) {
     .imClientInfo-wrapper{
-        display: none;
+        position: fixed;
+        width: 0 !important;
+        z-index: 1000;
+        background: #e6e6e6;
+        overflow: hidden;
+        right: 0;
+        top: 0;
+    }
+    .record_show{
+        width: 300px !important;
     }
     .imClient-main {
         height: 95vh !important
+    }
+}
+@media screen and (min-width:550px) {
+     .sm_Show{
+        display: none;
     }
 }
 // 信息区域
@@ -447,6 +468,10 @@ export default {
             font-size: 16px;
             color: #1072b5;
             padding: 10px 15px 0;
+            .info_close{
+                float: right;
+                margin-right: 10px;
+            }
         }
     }
     .imClientInfo-notice-wrapper {

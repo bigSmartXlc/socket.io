@@ -3,7 +3,7 @@
     <div class="imChat-wrapper">
         <!-- 头部 -->
         <header class="imChat-header">
-            <i class="fa fa-indent" style="margin-right:15px" @click="toggleUserList()"></i>
+            <i class="fa fa-indent sm_Show" style="margin-right:15px" @click="toggleUserList()"></i>
             <span class="name">{{storeSelectedChatEn.clientChatName}}</span>
             <span class="time">{{getAccessTimeStr(storeSelectedChatEn.accessTime)}}</span>
             <span v-show="storeSelectedChatEn.state=='on' " class="on-line">在线</span>
@@ -90,6 +90,11 @@ export default {
 };
 </script>
 <style lang="less">
+@media screen and (min-width:550px) {
+    .sm_Show{
+        display: none !important;
+    }
+}
 .imChat-wrapper {
     .imChat-header {
         display: flex;

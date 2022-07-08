@@ -3,7 +3,7 @@
     <div class="imServer-wrapper">
         <main class="imServer-main">
             <im-record :class="{record_show:recordShow}" class="item im-record" @selectedChat="selectedChat()" @toggleUserList = toggleUserList></im-record>
-            <im-chat v-if="storeSelectedChatEn!=null" ref="im_chat" class="item im-chat" @toggleUserList = toggleUserList></im-chat>
+            <im-chat ref="im_chat" class="item im-chat" @toggleUserList = toggleUserList></im-chat>
         </main>
     </div>
 </template>

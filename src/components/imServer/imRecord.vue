@@ -7,7 +7,7 @@
                 <span class="kf-name position-h-v-mid">{{storeServerChatEn.serverChatName}}</span>
             </div>
             <div class="client-info-wrapper">
-                <p><i class="fa fa-user on-line"></i>{{storeCurrentChatEnlist.length}}<i class="fa fa-dedent" style="margin-left:15px" @click="toggleUserList()"></i></p>
+                <p><i class="fa fa-user on-line"></i>{{storeCurrentChatEnlist.length}}<i class="fa fa-dedent sm_Show" style="margin-left:15px" @click="toggleUserList()"></i></p>
             </div>
         </header>
         <main class="main">
@@ -109,6 +109,11 @@ export default {
 </script>
 
 <style lang="less">
+@media screen and (min-width:550px) {
+    .sm_Show{
+        display: none !important;
+    }
+}
 .imRecord-wrapper {
     width: 100%;
     height: 550px;

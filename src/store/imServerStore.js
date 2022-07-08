@@ -14,7 +14,11 @@ export const imServerStore = new Vuex.Store({
             serverChatName: '小P',
             avatarUrl: '/static/image/im_server_avatar.png'
         },
-        selectedChatEn: null, // 选取的会话对象
+        selectedChatEn: {
+            clientChatName:'',
+            state:'',
+            accessTime:new Date(),
+        }, // 选取的会话对象
         currentChatEnlist: [], // 当前chat实体集合
         notificationChatEnlist: [], // 通知chat实体集合
         haveNewMsgDelegate: null, // 当前已选中的用户含有新消息
