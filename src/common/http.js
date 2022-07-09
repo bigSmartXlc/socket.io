@@ -2,7 +2,7 @@ import Vue from 'vue';
 import axios from 'axios';
 
 var axiosInstance = axios.create({
-    baseURL: location.origin.replace(/:\d+/, ':3000'),
+    baseURL: 'http://xlwys.zyh5games.com',
     timeout: 1000 * 5
 });
 
@@ -22,10 +22,10 @@ axiosInstance.interceptors.request.use(
  */
 var httpResponseHandle = function() {
     var self = this;
-    if (self.res.code == '0') {
-        self.successCallback && self.successCallback(self.res.data);
+    if (self.res.code == 100000) {
+        self.successCallback && self.successCallback(self.res);
     } else {
-        self.failCallback && self.failCallback(self.res.data);
+        self.failCallback && self.failCallback(self.res);
     }
 };
 
@@ -58,8 +58,15 @@ var http = {
      * @param {Function} opts.successCallback 成功接收内容时的回调函数
      */
     post: function(opts) {
-        axiosInstance
-            .post(opts.url, opts.params)
+        var options = {
+            url: opts.url,
+            method: 'post', // default
+            data:opts.params,
+        }
+        if(opts.headers){
+            options.headers =JSON.parse(JSON.stringify(opts.headers))  
+        }
+        axiosInstance(options)
             .then(function(res) {
                 opts.res = res.data;
                 httpResponseHandle.call(opts);

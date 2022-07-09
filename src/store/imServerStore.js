@@ -384,62 +384,75 @@ export const imServerStore = new Vuex.Store({
          * 服务端上线
          */
         SERVER_ON: function(context, payload) {
-            context.state.socket = require('socket.io-client')('http://localhost:3001');
-            context.state.socket.on('connect', function() {
-                // 服务端上线
-                context.state.socket.emit('SERVER_ON', {
-                    serverChatEn: {
-                        serverChatId: context.state.serverChatEn.serverChatId,
-                        serverChatName: context.state.serverChatEn.serverChatName,
-                        avatarUrl:context.state.serverChatEn.avatarUrl
-                    }
-                });
+            context.state.socket = new WebSocket("ws://114.55.211.2:7272")
+            console.log(context.state.socket);
+            context.state.socket.onmessage = (res)=>{
+                var data = JSON.parse(res.data)
+                switch(data.type){
+                    case 'init':
+                        this.can_say(data)
+                        break
+                    case 'say':
+                         this.user_obj = JSON.parse(JSON.stringify(data))
+                         this.chatInfoEn.state = 'on'      
+                }
+            }
+            // context.state.socket = require('socket.io-client')('http://localhost:3001');
+            // context.state.socket.on('connect', function() {
+            //     // 服务端上线
+            //     context.state.socket.emit('SERVER_ON', {
+            //         serverChatEn: {
+            //             serverChatId: context.state.serverChatEn.serverChatId,
+            //             serverChatName: context.state.serverChatEn.serverChatName,
+            //             avatarUrl:context.state.serverChatEn.avatarUrl
+            //         }
+            //     });
 
-                // 访客端上线
-                context.state.socket.on('CLIENT_ON', function(data) {
-                    // 1)增加客户列表
-                    context.dispatch('addClientChat', {
-                        newChatEn: {
-                            clientChatId: data.clientChatEn.clientChatId,
-                            clientChatName: data.clientChatEn.clientChatName
-                        }
-                    });
-                });
+            //     // 访客端上线
+            //     context.state.socket.on('CLIENT_ON', function(data) {
+            //         // 1)增加客户列表
+            //         context.dispatch('addClientChat', {
+            //             newChatEn: {
+            //                 clientChatId: data.clientChatEn.clientChatId,
+            //                 clientChatName: data.clientChatEn.clientChatName
+            //             }
+            //         });
+            //     });
 
-                // 访客端离线
-                context.state.socket.on('CLIENT_OFF', function(data) {
-                    // 1)修改客户状态为离线
-                    context.dispatch('extendChatEn', {
-                        clientChatId: data.clientChatEn.clientChatId,
-                        extends: {
-                            state: 'off'
-                        }
-                    });
+            //     // 访客端离线
+            //     context.state.socket.on('CLIENT_OFF', function(data) {
+            //         // 1)修改客户状态为离线
+            //         context.dispatch('extendChatEn', {
+            //             clientChatId: data.clientChatEn.clientChatId,
+            //             extends: {
+            //                 state: 'off'
+            //             }
+            //         });
 
-                    // 2)增加消息
-                    context.dispatch('addChatMsg', {
-                        clientChatId: data.clientChatEn.clientChatId,
-                        msg: {
-                            role: 'sys',
-                            contentType: 'text',
-                            content: '客户断开连接'
-                        }
-                    });
-                });
+            //         // 2)增加消息
+            //         context.dispatch('addChatMsg', {
+            //             clientChatId: data.clientChatEn.clientChatId,
+            //             msg: {
+            //                 role: 'sys',
+            //                 contentType: 'text',
+            //                 content: '客户断开连接'
+            //             }
+            //         });
+            //     });
 
-                // 访客端发送了信息
-                context.state.socket.on('CLIENT_SEND_MSG', function(data) {
-                    context.dispatch('addChatMsg', {
-                        clientChatId: data.clientChatEn.clientChatId,
-                        msg: data.msg
-                    });
-                });
+            //     // 访客端发送了信息
+            //     context.state.socket.on('CLIENT_SEND_MSG', function(data) {
+            //         context.dispatch('addChatMsg', {
+            //             clientChatId: data.clientChatEn.clientChatId,
+            //             msg: data.msg
+            //         });
+            //     });
 
-                // 离开
-                window.addEventListener('beforeunload', () => {
-                    context.dispatch('SERVER_OFF');
-                });
-            });
+            //     // 离开
+            //     window.addEventListener('beforeunload', () => {
+            //         context.dispatch('SERVER_OFF');
+            //     });
+            // });
         },
 
         /**

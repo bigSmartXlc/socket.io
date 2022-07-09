@@ -4,7 +4,7 @@
         <div class="imClient-inner">
             <header class="imClient-header">
                 <div class="name-wrapper position-v-mid">
-                    <span v-if="chatInfoEn.chatState == 'robot'">Vue在线客服-访客端</span>
+                    <span v-if="chatInfoEn.chatState == 'robot'">在线客服-访客端</span>
                     <span v-else-if="chatInfoEn.chatState == 'agent'">您正在与客服{{serverChatEn.serverChatName}}对话</span>
                 </div>
                 <div class="opr-wrapper position-v-mid">
@@ -24,7 +24,12 @@
                 <!-- 聊天框 -->
                 <div class="item imClientChat-wrapper">
                     <!-- 聊天记录 -->
-                    <common-chat ref="common_chat" :chatInfoEn="chatInfoEn" :oprRoleName=" 'client'" @sendMsg="sendMsg" @chatCallback="chatCallback"></common-chat>
+                    <common-chat ref="common_chat" 
+                    :chatInfoEn="chatInfoEn" 
+                    :oprRoleName=" 'client'" 
+                    @sendMsg="sendMsg" 
+                    @chatCallback="chatCallback">
+                    </common-chat>
                 </div>
                 <!-- 信息区域 -->
                 <div class="item imClientInfo-wrapper" :class="{record_show:recordShow}">
@@ -86,6 +91,7 @@ import commonChat from '@/components/common/common_chat.vue';
 import imRate from './imRate.vue';
 import imLeave from './imLeave.vue';
 import imTransfer from './imTransfer.vue';
+import api from '@/api/apilist.js'
 
 export default {
     components: {
@@ -96,13 +102,15 @@ export default {
     },
     data() {
         return {
+            ws:null,
+            user_obj:{},
             recordShow:false,
             socket: null,
             chatInfoEn: {
                 chatState: 'robot', // chat状态；robot 机器人、agent 客服
                 inputContent: '', // 输入框内容
                 msgList: [], // 消息列表
-                state: 'on', // 连接状态;on ：在线；off：离线
+                state: 'off', // 连接状态;on ：在线；off：离线
                 lastMsgShowTime: null // 最后一个消息的显示时间
             }, // 会话信息，包括聊天记录、状态
             clientChatEn: {
@@ -182,8 +190,43 @@ export default {
          * 注册socket
          * @param {String} serverChatId 服务端chatId
          */
+        reg_ws(){
+              this.ws = new WebSocket("ws://114.55.211.2:7272")
+            this.ws.onmessage = (res)=>{
+                var data = JSON.parse(res.data)
+                switch(data.type){
+                    case 'init':
+                        this.can_say(data)
+                        break
+                    case 'say':
+                         this.user_obj = JSON.parse(JSON.stringify(data))
+                         this.chatInfoEn.state = 'on'      
+                }
+            }
+        },
+        //查询是否客服是否连通
+        can_say(data) {
+            this.$http.post({
+                url: api.ws_init,
+                params:{
+                    user_type: 'cps-user',
+                    client_id: data.client_id,
+                    type: data.type,
+                },
+                headers:{
+                    USERID:385,
+                    token:'ccec30de01bddbd8ca5cff3b7e7f40d5'
+                },
+                successCallback: (res) => {
+                    console.log(res);
+                    if(res.code==10000){
+
+                    }
+                }
+            });
+        },
         regSocket: function(serverChatId) {
-            this.$data.socket = require('socket.io-client')('http://localhost:3001');
+            his.$data.socket = require('socket.io-client')('http://localhost:3001');
             this.$data.socket.on('connect', () => {
                 // 客户端上线
                 this.$data.socket.emit('CLIENT_ON', {
@@ -278,24 +321,47 @@ export default {
          * @param {Object} rs 回调对象
          */
         sendMsg: function(rs) {
-            var msg = rs.msg;
-            msg.role = 'client';
-            msg.avatarUrl = this.$data.clientChatEn.avatarUrl;
-            if (this.$data.chatInfoEn.chatState == 'robot') {
-                // 机器人发送接口
-            } else if (this.$data.chatInfoEn.chatState == 'agent') {
-                // 客服接口
-                this.$data.socket.emit('CLIENT_SEND_MSG', {
-                    serverChatId: this.$data.serverChatEn.serverChatId,
-                    clientChatEn: this.$data.clientChatEn,
-                    msg: msg
-                });
-            }
-            // 2.添加到消息集合李
-            var self = this;
-            this.addChatMsg(msg, function() {
-                self.goEnd();
+                this.$http.post({
+                url: api.ws_chat,
+                params:{
+                    ...this.user_obj,
+                     user_type: 'cps-user',
+                    msg: rs.msg.content,
+                    msg_type: 1 //1文本2文件3视频4音频5其他
+                },
+                headers:{
+                    USERID:385,
+                    token:'ccec30de01bddbd8ca5cff3b7e7f40d5'
+                },
+                successCallback: (res) => {
+                    if(res.code==100000){
+                        var msg = rs.msg
+                        msg.role = 'client'
+                        rs.successCallbcak()
+                            this.addChatMsg(msg, function() {
+                                this.goEnd();
+                            });
+                    }
+                }
             });
+            // var msg = rs.msg;
+            // msg.role = 'client';
+            // msg.avatarUrl = this.$data.clientChatEn.avatarUrl;
+            // if (this.$data.chatInfoEn.chatState == 'robot') {
+            //     // 机器人发送接口
+            // } else if (this.$data.chatInfoEn.chatState == 'agent') {
+            //     // 客服接口
+            //     this.$data.socket.emit('CLIENT_SEND_MSG', {
+            //         serverChatId: this.$data.serverChatEn.serverChatId,
+            //         clientChatEn: this.$data.clientChatEn,
+            //         msg: msg
+            //     });
+            // }
+            // // 2.添加到消息集合李
+            // var self = this;
+            // this.addChatMsg(msg, function() {
+            //     self.goEnd();
+            // });
         },
 
         /**
@@ -346,9 +412,9 @@ export default {
          * chat回调
          */
         chatCallback: function(rs) {
-            if (rs.eventType == 'transformServer') {
-                this.transferDialog_show();
-            }
+            // if (rs.eventType == 'transformServer') {
+            //     this.transferDialog_show();
+            // }
         },
         /**
          * 显示评分dialog
@@ -370,7 +436,9 @@ export default {
         }
     },
     mounted() {
-        this.regClientChatEn();
+        // this.regClientChatEn();
+        // this.regSocket()
+        this.reg_ws()
     }
 };
 </script>
@@ -425,12 +493,13 @@ export default {
             }
         }
         & > .imClientChat-wrapper {
-            max-width: 550px;
+            // max-width: 550px;
             width: 100%;
             border-right: 1px solid #ccc;
         }
         & > .imClientInfo-wrapper {
-           width: 300px;
+        //    width: 300px;
+        display: none;
         }
     }
 }
@@ -445,7 +514,7 @@ export default {
         top: 0;
     }
     .record_show{
-        width: 300px !important;
+        // width: 300px !important;
     }
     .imClient-main {
         height: 95vh !important
