@@ -119,6 +119,7 @@ export default {
                 inputContent: '', // 本次输入框的消息内容
                 msgList: [], // 消息集合
             },
+            state:'on'
         },
         oprRoleName: {
             required: true,

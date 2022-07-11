@@ -20,7 +20,8 @@ export default {
     data() {
         return {
             recordShow:false,
-            socket: null
+            socket: null,
+            serve_socket:null,
         };
     },
     computed: {
@@ -37,10 +38,71 @@ export default {
         /**
          * 选中了会话
          */
-        selectedChat: function() {}
+        selectedChat: function() {},
+            getUrlParams(url) {
+            // 通过 ? 分割获取后面的参数字符串
+            let urlStr = url.split('?')[1]
+            // 创建空对象存储参数
+            let obj = {};
+            // 再通过 & 将每一个参数单独分割出来
+            let paramsArr = urlStr.split('&')
+            for(let i = 0,len = paramsArr.length;i < len;i++){
+                // 再通过 = 将每一个参数分割为 key:value 的形式
+                let arr = paramsArr[i].split('=')
+                obj[arr[0]] = arr[1];
+            }
+            return obj
+        },
+        serve_init(){
+              this.serve_socket = new WebSocket("ws://114.55.211.2:7272")
+            this.serve_socket.onmessage = (res)=>{
+                var data = JSON.parse(res.data)
+                switch(data.type){
+                    case 'init':
+                        http.post({
+                            url: api.kefu_init,
+                            params:{
+                                user_type: 'kefu-user',
+                                client_id: data.client_id,
+                                type: data.type,
+                                uid:1,
+                                token:context.state.header.token
+                            },
+                            successCallback: (res) => {
+                                console.log(res);
+                                if(res.code==10000){
+            
+                                }
+                            }
+                        });
+                        break
+                    case 'say':
+                        break
+                        case 'ask':
+                            context.dispatch('addChatMsg', {
+                            clientChatId: data.clientChatEn.clientChatId,
+                            msg: {
+                                contentType: 'text',
+                                content: data.msg
+                            }
+                        });
+
+
+                }
+            }
+        }
     },
     mounted() {
+          let parames = this.getUrlParams(window.location.href)
+            console.log(parames);
+        // if(parames){
+        //     this.header.USERID=parames.uid
+        //     this.header.token=parames.token
+        //     this.header.user_type=parames.user_type
+        // }
+        this.$store.imServerStore.commit('save_header',parames)
         this.$store.imServerStore.dispatch('SERVER_ON');
+        // this.serve_init()
     },
     destroyed() {
         this.$store.imServerStore.dispatch('SERVER_OFF');

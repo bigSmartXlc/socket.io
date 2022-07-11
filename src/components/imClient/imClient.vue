@@ -1,6 +1,9 @@
 <!-- im客户端 入口 -->
 <template>
     <div class="imClient-wrapper">
+        <audio controls style="display:none" ref="tipsplay">
+            <source src="../../assets/sourse/tips.mp3" />
+        </audio>
         <div class="imClient-inner">
             <header class="imClient-header">
                 <div class="name-wrapper position-v-mid">
@@ -92,7 +95,7 @@ import imRate from './imRate.vue';
 import imLeave from './imLeave.vue';
 import imTransfer from './imTransfer.vue';
 import api from '@/api/apilist.js'
-
+import mp3 from '@/assets/sourse/tips.mp3'
 export default {
     components: {
         commonChat: commonChat,
@@ -103,11 +106,12 @@ export default {
     data() {
         return {
             ws:null,
+            header:{},
             user_obj:{},
             recordShow:false,
             socket: null,
             chatInfoEn: {
-                chatState: 'robot', // chat状态；robot 机器人、agent 客服
+                chatState: 'agent', // chat状态；robot 机器人、agent 客服
                 inputContent: '', // 输入框内容
                 msgList: [], // 消息列表
                 state: 'off', // 连接状态;on ：在线；off：离线
@@ -191,7 +195,7 @@ export default {
          * @param {String} serverChatId 服务端chatId
          */
         reg_ws(){
-              this.ws = new WebSocket("ws://114.55.211.2:7272")
+            this.ws = new WebSocket("ws://114.55.211.2:7272")
             this.ws.onmessage = (res)=>{
                 var data = JSON.parse(res.data)
                 switch(data.type){
@@ -200,23 +204,32 @@ export default {
                         break
                     case 'say':
                          this.user_obj = JSON.parse(JSON.stringify(data))
-                         this.chatInfoEn.state = 'on'      
+                         this.chatInfoEn.state = 'on'
+                    case 'ask':
+                        console.log(data);           
                 }
             }
+
+            //监听离开页面断开连接
+            window.addEventListener('beforeunload', () => {
+                    this.closeChat();
+            });
         },
         //查询是否客服是否连通
         can_say(data) {
             this.$http.post({
                 url: api.ws_init,
                 params:{
-                    user_type: 'cps-user',
+                    user_type: this.header.user_type,
                     client_id: data.client_id,
                     type: data.type,
+                    uid:this.header.USERID,
+                    token:this.header.token
                 },
-                headers:{
-                    USERID:385,
-                    token:'ccec30de01bddbd8ca5cff3b7e7f40d5'
-                },
+                headers:this.header.user_type == 'cps-user'?{
+                    USERID:this.header.USERID,
+                    token:this.header.token
+                }:{},
                 successCallback: (res) => {
                     console.log(res);
                     if(res.code==10000){
@@ -325,22 +338,23 @@ export default {
                 url: api.ws_chat,
                 params:{
                     ...this.user_obj,
-                     user_type: 'cps-user',
+                    user_type: this.header.user_type,//cps/sdk/kefu/visitor
                     msg: rs.msg.content,
                     msg_type: 1 //1文本2文件3视频4音频5其他
                 },
-                headers:{
-                    USERID:385,
-                    token:'ccec30de01bddbd8ca5cff3b7e7f40d5'
-                },
+                 headers:this.header.user_type == 'cps-user'?{
+                    USERID:this.header.USERID,
+                    token:this.header.token
+                }:{},
                 successCallback: (res) => {
                     if(res.code==100000){
                         var msg = rs.msg
                         msg.role = 'client'
+                        msg.avatarUrl = 'static/image/im_client_avatar.png'
                         rs.successCallbcak()
-                            this.addChatMsg(msg, function() {
-                                this.goEnd();
-                            });
+                        this.addChatMsg(msg, function() {
+                            this.goEnd();
+                        });
                     }
                 }
             });
@@ -433,11 +447,36 @@ export default {
             this.$nextTick(() => {
                 this.$refs.im_leave.init();
             });
-        }
+        },
+        //获取url参数
+        getUrlParams(url) {
+            // 通过 ? 分割获取后面的参数字符串
+            let urlStr = url.split('?')[1]
+            // 创建空对象存储参数
+            let obj = {};
+            // 再通过 & 将每一个参数单独分割出来
+            let paramsArr = urlStr.split('&')
+            for(let i = 0,len = paramsArr.length;i < len;i++){
+                // 再通过 = 将每一个参数分割为 key:value 的形式
+                let arr = paramsArr[i].split('=')
+                obj[arr[0]] = arr[1];
+            }
+            return obj
+        },
+        playAudio() {
+            this.$refs.tipsplay.play()
+        },
     },
     mounted() {
         // this.regClientChatEn();
         // this.regSocket()
+        //获取URL参数
+        let parames = this.getUrlParams(window.location.href)
+        if(parames){
+            this.header.USERID=parames.uid
+            this.header.token=parames.token
+            this.header.user_type=parames.user_type
+        }
         this.reg_ws()
     }
 };

@@ -5,10 +5,13 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
 import ak from '@/common/ak.js';
-
+import http from '@/common/http.js';
+import api from '@/api/apilist.js'
 Vue.use(Vuex);
 export const imServerStore = new Vuex.Store({
     state: {
+        header:null,
+        user_obj:{},
         serverChatEn: {
             serverChatId: Number.parseInt(Date.now() + Math.random()),
             serverChatName: '小P',
@@ -16,7 +19,7 @@ export const imServerStore = new Vuex.Store({
         },
         selectedChatEn: {
             clientChatName:'',
-            state:'',
+            state:'on',
             accessTime:new Date(),
         }, // 选取的会话对象
         currentChatEnlist: [], // 当前chat实体集合
@@ -25,6 +28,10 @@ export const imServerStore = new Vuex.Store({
         socket: null
     },
     mutations: {
+        //保存请求头
+        save_header:function(state,data){
+            state.header = data
+        },
         /**
          * 触发当前选择的chat含有新的消息
          * @param {Object} payload 载荷对象
@@ -86,7 +93,7 @@ export const imServerStore = new Vuex.Store({
          * @param {String} payload.newChatEn 新的chat对象
          */
         addClientChat: function(context, { newChatEn }) {
-            context.dispatch('getChatEnByChatId', { clientChatId: newChatEn.clientChatId }).then((chatEn) => {
+            context.dispatch('getChatEnByChatId', { client_id: newChatEn.client_id }).then((chatEn) => {
                 if (chatEn == null) {
                     // 1)公共属性
                     newChatEn.msgList = [];
@@ -102,7 +109,7 @@ export const imServerStore = new Vuex.Store({
 
                 // 2)增加消息
                 context.dispatch('addChatMsg', {
-                    clientChatId: newChatEn.clientChatId,
+                    client_id: newChatEn.client_id,
                     msg: {
                         role: 'sys',
                         contentType: 'text',
@@ -113,10 +120,10 @@ export const imServerStore = new Vuex.Store({
         },
         /**
          * 根据jobId获取chat对象
-         * @param {String} clientChatId 需要修改的chatEn的id，根据此id匹配当前集合或历史集合
+         * @param {String} client_id 需要修改的chatEn的id，根据此id匹配当前集合或历史集合
          * @param {String} listName 指定的集合名称；e.g. currentChatEnlist、historyChatEnlist、allHistoryChatEnlist
          */
-        getChatEnByChatId: function(context, { clientChatId, listName }) {
+        getChatEnByChatId: function(context, { client_id, listName }) {
             var chatEn = null;
 
             if (listName) {
@@ -124,7 +131,7 @@ export const imServerStore = new Vuex.Store({
                 var targetList = context.state[listName];
                 for (var i = 0; i < targetList.length; i++) {
                     var tmpEn = targetList[i];
-                    if (tmpEn.clientChatId == clientChatId) {
+                    if (tmpEn.client_id == client_id) {
                         chatEn = tmpEn;
                         break;
                     }
@@ -134,7 +141,7 @@ export const imServerStore = new Vuex.Store({
                 // 1)从当前会话列表查找
                 for (var i = 0; i < context.state.currentChatEnlist.length; i++) {
                     var tmpEn = context.state.currentChatEnlist[i];
-                    if (tmpEn.clientChatId == clientChatId) {
+                    if (tmpEn.client_id == client_id) {
                         chatEn = tmpEn;
                         break;
                     }
@@ -147,11 +154,11 @@ export const imServerStore = new Vuex.Store({
         /**
          * 修改Chat对象的属性
          * @param {Object} payload 载荷对象
-         * @param {Object} payload.clientChatId 需要修改的chatEn的id，根据此id匹配当前集合或历史集合
+         * @param {Object} payload.client_id 需要修改的chatEn的id，根据此id匹配当前集合或历史集合
          * @param {Array} payload.extends Chat需要变更的属性对象数组
          */
         extendChatEn: function(context, payload) {
-            return context.dispatch('getChatEnByChatId', { clientChatId: payload.clientChatId }).then((chatEn) => {
+            return context.dispatch('getChatEnByChatId', { client_id: payload.client_id }).then((chatEn) => {
                 // 1.若没有，就附加到当前会话列表里
                 if (chatEn == null) {
                     return;
@@ -163,7 +170,7 @@ export const imServerStore = new Vuex.Store({
                 }
 
                 // 3.若选中的当前chatEn 与 传入的一直，更新选中额chatEn
-                if (context.state.selectedChatEn && context.state.selectedChatEn.clientChatId == chatEn.clientChatId) {
+                if (context.state.selectedChatEn && context.state.selectedChatEn.client_id == chatEn.client_id) {
                     context.state.selectedChatEn = Object.assign({}, chatEn);
                     Vue.nextTick(function() {});
                 }
@@ -173,15 +180,15 @@ export const imServerStore = new Vuex.Store({
 
         /**
          * 添加chat对象的msg
-         * @param {String} clientChatId 会话Id
+         * @param {String} client_id 会话Id
          * @param {Object} msg 消息对象；eg：{role:'sys',content:'含有新的消息'}
          * @param {String} msg.role 消息所有者身份；eg：'sys'系统消息；
          * @param {String} msg.contentType 消息类型；text:文本(默认)；image:图片
          * @param {String} msg.content 消息内容
          * @param {Function} successCallback 添加消息后的回调
          */
-        addChatMsg: function(context, { clientChatId, msg, successCallback }) {
-            context.dispatch('getChatEnByChatId', { clientChatId: clientChatId }).then((chatEn) => {
+        addChatMsg: function(context, { client_id, msg, successCallback }) {
+            context.dispatch('getChatEnByChatId', { client_id: client_id }).then((chatEn) => {
                 if (chatEn == null) {
                     return;
                 }
@@ -226,7 +233,7 @@ export const imServerStore = new Vuex.Store({
                         break;
                 }
                 // 更新列表
-                if (context.state.selectedChatEn && chatEn.clientChatId == context.state.selectedChatEn.clientChatId) {
+                if (context.state.selectedChatEn && chatEn.client_id == context.state.selectedChatEn.client_id) {
                     chatEn.newMsgCount = 0;
                     context.state.selectedChatEn = Object.assign({}, chatEn);
                     context.commit('triggerHaveNewMsgDelegate');
@@ -252,10 +259,10 @@ export const imServerStore = new Vuex.Store({
 
         /**
          * 选中会话
-         * @param {String} clientChatId 选中会话Id
+         * @param {String} client_id 选中会话Id
          */
-        selectChat: function(context, { clientChatId }) {
-            context.dispatch('getChatEnByChatId', { clientChatId: clientChatId }).then((chatEn) => {
+        selectChat: function(context, { client_id }) {
+            context.dispatch('getChatEnByChatId', { client_id: client_id }).then((chatEn) => {
                 var state = context.state;
                 chatEn.newMsgCount = 0; // 设置新消息为0
                 // 1.设置当前选中的会话
@@ -264,7 +271,7 @@ export const imServerStore = new Vuex.Store({
                 // 2.刷新当前会话集合
                 for (var i = 0; i < state.currentChatEnlist.length; i++) {
                     var tmpEn = state.currentChatEnlist[i];
-                    if (tmpEn.clientChatId == chatEn.clientChatId) {
+                    if (tmpEn.client_id == chatEn.client_id) {
                         state.currentChatEnlist[i] = state.selectedChatEn;
                         break;
                     }
@@ -286,7 +293,7 @@ export const imServerStore = new Vuex.Store({
 
             // 1.判断当前通知集合里是否已存在次会话，若已存在去除此会话
             for (var i = 0; i < state.notificationChatEnlist.length; i++) {
-                if (state.notificationChatEnlist[i].clientChatId == chatEn.clientChatId) {
+                if (state.notificationChatEnlist[i].client_id == chatEn.client_id) {
                     state.notificationChatEnlist.splice(i, 1);
                     break;
                 }
@@ -299,7 +306,7 @@ export const imServerStore = new Vuex.Store({
 
             // 3.转换后加入到当前通知集合里
             var tmpChatEn = {
-                clientChatId: chatEn.clientChatId,
+                client_id: chatEn.client_id,
                 sourceInfo_way: chatEn.sourceInfo_way,
                 site: window.location.host
             };
@@ -333,7 +340,7 @@ export const imServerStore = new Vuex.Store({
                 const item = state.notificationChatEnlist[i];
                 // 1)已存在的通知列表是否包含此会话，若存在就关闭并移除
                 for (var j = 0; j < window.imServerStore_notificationList.length; j++) {
-                    if (window.imServerStore_notificationList[j].data == item.clientChatId) {
+                    if (window.imServerStore_notificationList[j].data == item.client_id) {
                         window.imServerStore_notificationList[j].close();
                         break;
                     }
@@ -342,7 +349,7 @@ export const imServerStore = new Vuex.Store({
                 // 2)创建新的通知
                 const notification = new Notification(item.title, {
                     body: item.content,
-                    data: item.clientChatId,
+                    data: item.client_id,
                     tag: Date.now(),
                     icon: ak.BLL.getPngFromWay(item.sourceInfo_way)
                 });
@@ -350,7 +357,7 @@ export const imServerStore = new Vuex.Store({
                     window.focus();
                     window.polkVue.$router.push('im');
                     context.commit('clearNotificationChat');
-                    context.dispatch('selectChat', { clientChatId: item.clientChatId });
+                    context.dispatch('selectChat', { client_id: item.client_id });
                     notification.close();
                     imServerStore_notificationList = [];
                 };
@@ -358,7 +365,7 @@ export const imServerStore = new Vuex.Store({
                 notification.onclose = function(e) {
                     // remove en
                     for (var i = 0; i < state.notificationChatEnlist.length; i++) {
-                        if (state.notificationChatEnlist[i].clientChatId == item.clientChatId) {
+                        if (state.notificationChatEnlist[i].client_id == item.client_id) {
                             state.notificationChatEnlist.splice(i, 1);
                             break;
                         }
@@ -385,16 +392,41 @@ export const imServerStore = new Vuex.Store({
          */
         SERVER_ON: function(context, payload) {
             context.state.socket = new WebSocket("ws://114.55.211.2:7272")
-            console.log(context.state.socket);
             context.state.socket.onmessage = (res)=>{
                 var data = JSON.parse(res.data)
                 switch(data.type){
                     case 'init':
-                        this.can_say(data)
+                        http.post({
+                            url: api.kefu_init,
+                            params:{
+                                user_type: 'kefu-user',
+                                client_id: data.client_id,
+                                type: data.type,
+                                // uid:this.header.USERID,
+                                uid:1,
+                                token:context.state.header.token
+                            },
+                            successCallback: (res) => {
+                                console.log(res);
+                                if(res.code==10000){
+            
+                                }
+                            }
+                        });
                         break
                     case 'say':
-                         this.user_obj = JSON.parse(JSON.stringify(data))
-                         this.chatInfoEn.state = 'on'      
+                        context.state.user_obj = JSON.parse(JSON.stringify(data))
+                        break
+                        case 'ask':
+                        console.log(data);
+                        context.dispatch('addClientChat', {
+                        newChatEn: {
+                            client_id: data.client_id,
+                            clientChatName: '测试'
+                        }
+                    });
+
+
                 }
             }
             // context.state.socket = require('socket.io-client')('http://localhost:3001');
@@ -413,7 +445,7 @@ export const imServerStore = new Vuex.Store({
             //         // 1)增加客户列表
             //         context.dispatch('addClientChat', {
             //             newChatEn: {
-            //                 clientChatId: data.clientChatEn.clientChatId,
+            //                 client_id: data.clientChatEn.client_id,
             //                 clientChatName: data.clientChatEn.clientChatName
             //             }
             //         });
@@ -423,7 +455,7 @@ export const imServerStore = new Vuex.Store({
             //     context.state.socket.on('CLIENT_OFF', function(data) {
             //         // 1)修改客户状态为离线
             //         context.dispatch('extendChatEn', {
-            //             clientChatId: data.clientChatEn.clientChatId,
+            //             client_id: data.clientChatEn.client_id,
             //             extends: {
             //                 state: 'off'
             //             }
@@ -431,7 +463,7 @@ export const imServerStore = new Vuex.Store({
 
             //         // 2)增加消息
             //         context.dispatch('addChatMsg', {
-            //             clientChatId: data.clientChatEn.clientChatId,
+            //             client_id: data.clientChatEn.client_id,
             //             msg: {
             //                 role: 'sys',
             //                 contentType: 'text',
@@ -443,7 +475,7 @@ export const imServerStore = new Vuex.Store({
             //     // 访客端发送了信息
             //     context.state.socket.on('CLIENT_SEND_MSG', function(data) {
             //         context.dispatch('addChatMsg', {
-            //             clientChatId: data.clientChatEn.clientChatId,
+            //             client_id: data.clientChatEn.client_id,
             //             msg: data.msg
             //         });
             //     });
@@ -472,11 +504,31 @@ export const imServerStore = new Vuex.Store({
         /**
          * 发送消息
          */
-        sendMsg: function(context, { clientChatId, msg }) {
-            console.log(clientChatId);
-            context.state.socket.emit('SERVER_SEND_MSG', {
-                clientChatId: clientChatId,
-                msg: msg
+        sendMsg: function(context, { client_id, msg }) {
+            console.log(msg);
+            // context.state.socket.emit('SERVER_SEND_MSG', {
+            //     client_id: client_id,
+            //     msg: msg
+            // });
+            http.post({
+                url: api.kefu_chat,
+                params:{
+                    ...context.state.user_obj,
+                    user_type: 'kefu-user',//cps/sdk/kefu/visitor
+                    msg: msg.content,
+                    msg_type: 1 //1文本2文件3视频4音频5其他
+                },
+                successCallback: (res) => {
+                    if(res.code==100000){
+                        var msg = rs.msg
+                        msg.role = 'client'
+                        msg.avatarUrl = 'static/image/im_client_avatar.png'
+                        rs.successCallbcak()
+                        this.addChatMsg(msg, function() {
+                            this.goEnd();
+                        });
+                    }
+                }
             });
         }
     },
