@@ -6,6 +6,11 @@
             <div v-if="chatLoaded" class="common_chat-main" id="common_chat_main" ref="common_chat_main">
                 <div class="common_chat-main-content">
                     <div class="inner">
+                        <div class="history">
+                            <div class="history_line">
+                                —————————<span @click="getHistory()">历史记录</span>————————— 
+                            </div> 
+                        </div>
                         <div v-for="(item ,index) in chatInfoEn.msgList" :key="index">
                             <!-- 系统消息 -->
                             <div v-if="item.role=='sys'" class="item sys">
@@ -84,7 +89,7 @@
                         ></div>
                     </div>
                     <!-- 发送按钮 -->
-                    <el-button type="primary" size="small" class="send-btn" :class="chatInfoEn.state" @click="sendText()" :disabled="chatInfoEn.inputContent.length==0">发送</el-button>
+                    <el-button type="primary" size="small" class="send-btn" :class="chatInfoEn.state" @click="sendText()">发送</el-button>
                 </div>
                 <!-- 离线 -->
                 <div v-show="chatInfoEn.state=='off' || chatInfoEn.state=='end'" class="off-wrapper">
@@ -106,7 +111,7 @@
 
 <script>
 import common_chat_emoji from './common_chat_emoji.vue';
-
+import api from '@/api/apilist.js'
 export default {
     components: {
         commonChatEmoji: common_chat_emoji,
@@ -146,6 +151,10 @@ export default {
         });
     },
     methods: {
+        //获取历史记录
+        getHistory(){
+            this.$emit('history')
+        },
         /**
          * 初始化
          * @param {Object} opts 可选对象
@@ -390,6 +399,7 @@ export default {
          * 文件上传_点击
          */
         fileUpload_click: function (fileType) {
+            document.getElementById('common_chat_opr_fileUpload').value = ''
             document.getElementById('common_chat_opr_fileUpload').onchange = this.fileUpload_change;
             document.getElementById('common_chat_opr_fileUpload').click();
         },
@@ -411,18 +421,20 @@ export default {
 
             // 2.文件上传
             let formData = new FormData();
-            formData.append('uploadFile', document.getElementById('common_chat_opr_fileUpload').files[0]);
-            this.$http.uploadFile({
-                url: '/upload',
-                params: formData,
-                successCallback: (rs) => {
-                    document.getElementById('common_chat_opr_fileUpload').value = '';
-                    this.sendMsg({
-                        contentType: ['png', 'jpg', 'jpeg', 'gif', 'bmp'].indexOf(extend) >= 0 ? 'image' : 'file',
-                        fileName: fileName,
-                        fileUrl: rs.fileUrl,
-                        state: 'success',
-                    });
+            let file = document.getElementById('common_chat_opr_fileUpload').files[0]
+            let msg_type
+            if(!/\.(gif|jpg|jpeg|png|GIF|JPG|PNG)$/.test(file.name)){
+                msg_type = '5'
+            }else{
+                msg_type = '2'
+            }
+            formData.append('msg_type', msg_type);
+            formData.append('file', file);
+              this.$emit('sendFile', {
+                file:formData,
+                successCallbcak: function () {
+                    document.getElementById('common_chat_input').focus();
+                    self.goEnd();
                 },
             });
         },
@@ -484,7 +496,7 @@ export default {
          * 发送消息，e.g. 文本、图片、文件
          * @param {Object} msg 消息对象
          */
-        sendMsg: function (msg) {
+        sendMsg: function (msg) {   
             var self = this;
             // 1.传递
             this.$emit('sendMsg', {
@@ -551,6 +563,17 @@ export default {
                 height: 100%;
                 & > .inner {
                     padding-bottom: 20px;
+                    .history{
+                        text-align: center;
+                        margin-top: 15px;
+                        .history_line{
+                            display: inline-block;
+                            span{
+                                color: #00a8d7;
+                                cursor: pointer;
+                            }
+                        }
+                    }
                     .item {
                         clear: both;
                         overflow: hidden;

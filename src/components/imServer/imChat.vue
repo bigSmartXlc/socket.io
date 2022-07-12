@@ -11,7 +11,7 @@
         </header>
         <main class="imChat-main">
             <!-- 聊天框区域 -->
-            <common-chat ref="common_chat" :chatInfoEn="storeSelectedChatEn" :oprRoleName="'server'" @sendMsg="sendMsg"></common-chat>
+            <common-chat ref="common_chat" :chatInfoEn="storeSelectedChatEn" :oprRoleName="'server'" @sendMsg="sendMsg" @sendFile="sendFile" ></common-chat>
         </main>
     </div>
 </template>
@@ -50,6 +50,11 @@ export default {
         toggleUserList(){
             this.$emit('toggleUserList')
         },
+        sendFile:function(res){
+             this.$store.imServerStore.dispatch('sendFile', {
+                file: res.file
+            });
+        },
         /**
          * 发送消息
          * @param {Object} rs 回调对象
@@ -60,13 +65,13 @@ export default {
             msg.avatarUrl = this.storeServerChatEn.avatarUrl;
             // 1.socket发送消息
             this.$store.imServerStore.dispatch('sendMsg', {
-                clientChatId: this.storeSelectedChatEn.clientChatId,
+                client_id: this.storeSelectedChatEn.client_id,
                 msg: msg
             });
 
             // 2.附加到此chat对象的msg集合里
             this.$store.imServerStore.dispatch('addChatMsg', {
-                clientChatId: this.storeSelectedChatEn.clientChatId,
+                client_id: this.storeSelectedChatEn.client_id,
                 msg: msg,
                 successCallback: function() {
                     rs.successCallbcak && rs.successCallbcak();

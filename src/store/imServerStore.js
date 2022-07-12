@@ -11,6 +11,26 @@ Vue.use(Vuex);
 export const imServerStore = new Vuex.Store({
     state: {
         header:null,
+        user_info:{
+            userBasicInfo:{
+                name:'',
+                regTime:'',
+                subPackageName:'',
+                regIp:'',
+                mobile:'',
+                uid:'',
+                costs:'',
+                deviceUuid:'',
+                userCoinBalance:'',
+                vipLevel:'',
+            },
+            rolesList:{
+                data:[]
+            },
+            loginLogsList:{
+                data:[]
+            }
+        },
         user_obj:{},
         serverChatEn: {
             serverChatId: Number.parseInt(Date.now() + Math.random()),
@@ -87,6 +107,36 @@ export const imServerStore = new Vuex.Store({
         }
     },
     actions: {
+         /**
+         * 获取历史记录
+         */
+        get_history:function(context,{data,user_type}){
+            let role
+            if(user_type=='kefu-user'){
+                role = 'server' 
+            }else{
+                role = 'client'
+            }
+            data.forEach(item=>{
+                let contentType
+                if(item.msgType == '2'){
+                    contentType = 'image'
+                }else if(item.msgType=='5'){
+                    contentType = 'file'
+                }else{
+                    contentType = 'text'
+                }
+                context.dispatch('addChatMsg', {
+                    client_id: newChatEn.client_id,
+                    msg: {
+                        role: role,
+                        contentType,
+                        fileUrl:item.msg,
+                        content: item.msg
+                    }
+                });
+            })
+        },
         /**
          * 添加访客端chat对象
          * @param {Object} payload 载荷对象
@@ -106,14 +156,22 @@ export const imServerStore = new Vuex.Store({
                     newChatEn.lastMsgShowTime = null; // 最后一个消息的显示时间
                     context.state.currentChatEnlist.push(newChatEn);
                 }
-
                 // 2)增加消息
+                let contentType
+                if(newChatEn.msg_type == '2'){
+                    contentType = 'image'
+                }else if(newChatEn.msg_type=='5'){
+                    contentType = 'file'
+                }else{
+                    contentType = 'text'
+                }
                 context.dispatch('addChatMsg', {
                     client_id: newChatEn.client_id,
                     msg: {
-                        role: 'sys',
-                        contentType: 'text',
-                        content: chatEn == null ? '新客户接入' : '重新连接'
+                        role: 'client',
+                        contentType,
+                        fileUrl:newChatEn.msg,
+                        content: newChatEn.msg
                     }
                 });
             });
@@ -125,7 +183,6 @@ export const imServerStore = new Vuex.Store({
          */
         getChatEnByChatId: function(context, { client_id, listName }) {
             var chatEn = null;
-
             if (listName) {
                 // 1.指定了列表
                 var targetList = context.state[listName];
@@ -147,7 +204,6 @@ export const imServerStore = new Vuex.Store({
                     }
                 }
             }
-
             return chatEn;
         },
 
@@ -192,10 +248,9 @@ export const imServerStore = new Vuex.Store({
                 if (chatEn == null) {
                     return;
                 }
-
                 // 1.设定默认值
                 msg.createTime = msg.createTime == undefined ? new Date() : msg.createTime;
-
+                msg.avatarUrl='/static/image/im_client_avatar.png'
                 var msgList = chatEn.msgList ? chatEn.msgList : [];
 
                 // 2.插入消息
@@ -207,7 +262,8 @@ export const imServerStore = new Vuex.Store({
                     msgList.push({
                         role: 'sys',
                         contentType: 'text',
-                        content: ak.Utils.getDateTimeStr(msg.createTime, 'H:i')
+                        content: ak.Utils.getDateTimeStr(msg.createTime, 'H:i'),
+                        avatarUrl:'/static/image/im_client_avatar.png'
                     });
                     chatEn.lastMsgShowTime = msg.createTime;
                 }
@@ -240,10 +296,8 @@ export const imServerStore = new Vuex.Store({
                 } else {
                     chatEn.newMsgCount++;
                 }
-
                 // 4.排序
                 context.commit('sortCurrentChatEnlist', {});
-
                 // 5.加入通知
                 if (msg.isNewMsg && msg.role == 'client' && msg.contentType != 'preInput') {
                     context.dispatch('addNotificationChat', {
@@ -267,7 +321,18 @@ export const imServerStore = new Vuex.Store({
                 chatEn.newMsgCount = 0; // 设置新消息为0
                 // 1.设置当前选中的会话
                 context.state.selectedChatEn = Object.assign({}, chatEn);
-
+                http.post({
+                    url: api.user_info,
+                    params:{
+                        user_type:chatEn.user_type,
+                        auth_id:chatEn.auth_id
+                    },
+                    successCallback: (res) => {
+                        if(res.code==100000){
+                            Object.assign(context.state.user_info,res.data) 
+                        }
+                    }
+                });
                 // 2.刷新当前会话集合
                 for (var i = 0; i < state.currentChatEnlist.length; i++) {
                     var tmpEn = state.currentChatEnlist[i];
@@ -407,7 +472,6 @@ export const imServerStore = new Vuex.Store({
                                 token:context.state.header.token
                             },
                             successCallback: (res) => {
-                                console.log(res);
                                 if(res.code==10000){
             
                                 }
@@ -415,18 +479,24 @@ export const imServerStore = new Vuex.Store({
                         });
                         break
                     case 'say':
-                        context.state.user_obj = JSON.parse(JSON.stringify(data))
+                        console.log('say',data);
                         break
-                        case 'ask':
-                        console.log(data);
-                        context.dispatch('addClientChat', {
+                    case 'ask':
+                    context.state.user_obj = JSON.parse(JSON.stringify(data))
+                    context.dispatch('addClientChat', {
                         newChatEn: {
-                            client_id: data.client_id,
-                            clientChatName: '测试'
+                            ...data,
+                            clientChatName: data.user_type=='sdk-user'?'玩家':'游客'
                         }
                     });
-
-
+                        break
+                    case 'close':
+                        context.dispatch('extendChatEn', {
+                        client_id: data.client_id,
+                        extends: {
+                            state: 'off'
+                        }
+                    });       
                 }
             }
             // context.state.socket = require('socket.io-client')('http://localhost:3001');
@@ -500,39 +570,65 @@ export const imServerStore = new Vuex.Store({
             context.state.socket.close();
             context.state.socket = null;
         },
-
+        //服务端发送文件
+        sendFile:function(context,eq){
+            var file= eq.file
+            console.log(eq);
+            file.append('auth_id', context.state.user_obj.auth_id);
+            file.append('client_id',  context.state.user_obj.client_id);
+            file.append('type',  context.state.user_obj.type);
+            file.append('user_type', context.state.user_obj.user_type);
+            file.append('kefu_id', context.state.user_obj.kefu_id);
+            file.append('zyim_id', context.state.user_obj.zyim_id);
+            file.append('msg', '');
+            http.uploadFile({
+            url: api.kefu_chat,
+            params:file,
+            successCallback: (rs) => {
+                if(rs.code==100000){
+                    var msg = {}
+                    msg.role = 'server'
+                    if(rs.data.msg_type=='5'){
+                        msg.contentType = 'file'
+                    }else if(rs.data.msg_type == '2'){
+                        msg.contentType = 'image'
+                    }
+                    msg.avatarUrl = 'static/image/im_client_avatar.png'
+                    msg.fileUrl = rs.data.url
+                    context.dispatch('addChatMsg', {
+                        client_id: context.state.user_obj.client_id,
+                        msg: msg
+                    });
+                }
+            }
+        });
+        },
         /**
          * 发送消息
          */
         sendMsg: function(context, { client_id, msg }) {
-            console.log(msg);
-            // context.state.socket.emit('SERVER_SEND_MSG', {
-            //     client_id: client_id,
-            //     msg: msg
-            // });
             http.post({
                 url: api.kefu_chat,
                 params:{
                     ...context.state.user_obj,
-                    user_type: 'kefu-user',//cps/sdk/kefu/visitor
+                    // user_type: 'kefu-user',//cps/sdk/kefu/visitor
                     msg: msg.content,
                     msg_type: 1 //1文本2文件3视频4音频5其他
                 },
                 successCallback: (res) => {
                     if(res.code==100000){
-                        var msg = rs.msg
-                        msg.role = 'client'
-                        msg.avatarUrl = 'static/image/im_client_avatar.png'
-                        rs.successCallbcak()
-                        this.addChatMsg(msg, function() {
-                            this.goEnd();
-                        });
                     }
                 }
             });
         }
     },
     getters: {
+          /**
+         * 用户信息
+         */
+        user_info: function(state) {
+            return state.user_info;
+        },
         /**
          * 获取选中的会话对象
          */

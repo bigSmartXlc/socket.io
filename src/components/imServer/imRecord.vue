@@ -43,6 +43,7 @@
 </template>
 
 <script>
+import api from '@/api/apilist.js'
 export default {
     data() {
         return {};
@@ -70,7 +71,6 @@ export default {
          * @param {Object} en call实体类
          */
         selectChat: function(en) {
-            console.log(en);
             this.$store.imServerStore.dispatch('selectChat', { client_id: en.client_id });
             this.$emit('selectedChat', {}); // 事件上传
             this.$emit('toggleUserList')

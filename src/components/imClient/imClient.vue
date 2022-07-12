@@ -31,6 +31,8 @@
                     :chatInfoEn="chatInfoEn" 
                     :oprRoleName=" 'client'" 
                     @sendMsg="sendMsg" 
+                    @sendFile="sendFile" 
+                    @history="history" 
                     @chatCallback="chatCallback">
                     </common-chat>
                 </div>
@@ -124,7 +126,7 @@ export default {
             }, // 当前账号的信息
             serverChatEn: {
                 serverChatName: '',
-                avatarUrl: ''
+                avatarUrl: 'static/image/im_client_avatar.png'
             }, // 服务端chat信息
             robotEn: {
                 robotName: '小旺',
@@ -205,8 +207,24 @@ export default {
                     case 'say':
                          this.user_obj = JSON.parse(JSON.stringify(data))
                          this.chatInfoEn.state = 'on'
-                    case 'ask':
-                        console.log(data);           
+                         if(data.msg){
+                                var msg = {}
+                                msg.role = 'server'
+                                if(data.msg_type=='5'){
+                                    msg.contentType = 'file'
+                                }else if(data.msg_type == '2'){
+                                    msg.contentType = 'image'
+                                }else{
+                                    msg.contentType = 'text'
+                                }
+                                msg.avatarUrl = 'static/image/im_client_avatar.png'
+                                msg.fileUrl = data.msg
+                             this.addChatMsg(msg, () => {
+                                 this.$refs.common_chat.goEnd();
+                             });   
+                         }
+                         break
+                                
                 }
             }
 
@@ -226,14 +244,45 @@ export default {
                     uid:this.header.USERID,
                     token:this.header.token
                 },
-                headers:this.header.user_type == 'cps-user'?{
-                    USERID:this.header.USERID,
-                    token:this.header.token
-                }:{},
+                // headers:this.header.user_type == 'cps-user'?{
+                //     USERID:this.header.USERID,
+                //     token:this.header.token
+                // }:{},
                 successCallback: (res) => {
-                    console.log(res);
                     if(res.code==10000){
 
+                    }
+                }
+            });
+        },
+        // 获取用户聊天记录
+        history(){
+             this.$http.get({
+                url: api.history,
+                params:{
+                    user_type: this.header.user_type,
+                    auth_id:this.user_obj.auth_id
+                },
+                // headers:this.header.user_type == 'cps-user'?{
+                //     USERID:this.header.USERID,
+                //     token:this.header.token
+                // }:{},
+                successCallback: (res) => {
+                    if(res.code==100000){
+                        //   var msg = {}
+                        // msg.role = 'server'
+                        // if(data.msg_type=='5'){
+                        //     msg.contentType = 'file'
+                        // }else if(data.msg_type == '2'){
+                        //     msg.contentType = 'image'
+                        // }else{
+                        //     msg.contentType = 'text'
+                        // }
+                        // msg.avatarUrl = 'static/image/im_client_avatar.png'
+                        // msg.fileUrl = data.msg
+                        // this.addChatMsg(msg, () => {
+                        //     this.$refs.common_chat.goEnd();
+                        // }); 
                     }
                 }
             });
@@ -301,10 +350,8 @@ export default {
             // 1.设定默认值
             msg.role = msg.role == undefined ? 'sys' : msg.role;
             msg.contentType = msg.contentType == undefined ? 'text' : msg.contentType;
-            msg.createTime = msg.createTime == undefined ? new Date() : msg.createTime;
-
             var msgList = this.$data.chatInfoEn.msgList ? this.$data.chatInfoEn.msgList : [];
-
+            msg.createTime = msg.createTime == undefined ? new Date() : msg.createTime;
             // 2.插入消息
             // 1)插入日期
             // 实际场景中，在消息上方是否显示时间是由后台传递给前台的消息中附加上的，可参考 微信Web版
@@ -321,14 +368,45 @@ export default {
 
             // 2)插入消息
             msgList.push(msg);
-
             // 3.设置chat对象相关属性
             this.$data.chatInfoEn.msgList = msgList;
+            console.log(this.$data.chatInfoEn.msgList);
 
             // 4.回调
             successCallback && successCallback();
         },
-
+          /**
+         * 文件上传
+         * @param {Object} rs 回调对象
+         */
+        sendFile:function(res){
+            res.file.append('auth_id', this.user_obj.auth_id);
+            res.file.append('client_id',  this.user_obj.client_id);
+            res.file.append('type',  this.user_obj.type);
+            res.file.append('user_type', this.header.user_type);
+            res.file.append('msg', '');
+                this.$http.uploadFile({
+                url: api.ws_chat,
+                params:res.file,
+                successCallback: (rs) => {
+                    if(rs.code==100000){
+                        var msg = {}
+                        msg.role = 'client'
+                        if(rs.data.msg_type=='5'){
+                            msg.contentType = 'file'
+                        }else if(rs.data.msg_type == '2'){
+                            msg.contentType = 'image'
+                        }
+                        msg.avatarUrl = 'static/image/im_client_avatar.png'
+                        msg.fileUrl = rs.data.url
+                        this.addChatMsg(msg, function() {
+                            this.goEnd();
+                        });
+                        rs.successCallbcak()
+                    }
+                }
+            });
+        },
         /**
          * 发送消息
          * @param {Object} rs 回调对象
@@ -342,10 +420,6 @@ export default {
                     msg: rs.msg.content,
                     msg_type: 1 //1文本2文件3视频4音频5其他
                 },
-                 headers:this.header.user_type == 'cps-user'?{
-                    USERID:this.header.USERID,
-                    token:this.header.token
-                }:{},
                 successCallback: (res) => {
                     if(res.code==100000){
                         var msg = rs.msg

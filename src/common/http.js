@@ -1,5 +1,6 @@
 import Vue from 'vue';
 import axios from 'axios';
+import ak from '@/common/ak.js';
 
 var axiosInstance = axios.create({
     baseURL: 'http://xlwys.zyh5games.com',
@@ -38,9 +39,6 @@ var http = {
      * @param {Function} opts.successCallback 成功接收内容时的回调函数
      */
     get: function(opts) {
-        if (opts.params) {
-            opts.url = opts.url + '?' + this.toQueryString(opts.params);
-        }
         axiosInstance
             .get(opts.url, { params: opts.params })
             .then(function(res) {
@@ -75,7 +73,7 @@ var http = {
     },
 
     /**
-     * 上传文件
+     * 客户端上传文件
      * @param {Object} opts 配置项，可包含以下成员:
      * @param {String} opts.url 请求地址
      * @param {Object} opts.params 上传的参数
@@ -83,7 +81,7 @@ var http = {
      */
     uploadFile: function(opts) {
         axiosInstance
-            .post('/upload', opts.params, {
+            .post(opts.url, opts.params, {
                 headers: {
                     'Content-Type': 'multipart/form-data'
                 }
