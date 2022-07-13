@@ -6,7 +6,7 @@
             <div v-if="chatLoaded" class="common_chat-main" id="common_chat_main" ref="common_chat_main">
                 <div class="common_chat-main-content">
                     <div class="inner">
-                        <div class="history" v-show="chatInfoEn.state=='on'">
+                        <div class="history">
                             <div class="history_line">
                                 —————————<span @click="getHistory()">点击查看历史记录</span>————————— 
                             </div> 

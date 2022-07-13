@@ -226,6 +226,10 @@ export default {
                              });   
                          }
                          break
+                    case 'stop':
+                        console.log(data);
+                         this.$message(data.msg);
+                         break     
                                 
                 }
             }
@@ -259,12 +263,19 @@ export default {
         },
         // 获取用户聊天记录
         history(){
+            let start_time
+            if(this.chatInfoEn.msgList.length>0){
+                start_time = this.chatInfoEn.msgList[0].createTime
+            }else{
+                start_time = this.$ak.Utils.getDateTimeStr(new Date(), 'Y-m-d H:i:s')
+            }
              this.$http.get({
                 url: api.history,
                 params:{
                     user_type: this.header.user_type,
                     auth_id:this.user_obj.auth_id,
-                    page:this.carrentPage+1,
+                    // page:this.carrentPage+1,
+                    start_time
                 },
                 headers:this.header.user_type == 'cps-user'?{
                     USERID:this.header.USERID,
@@ -276,7 +287,7 @@ export default {
                             this.$message('已加载完');
                             return false
                             }
-                        this.carrentPage = res.data.currentPage
+                        // this.carrentPage = res.data.currentPage
                         var data = res.data.data
                         data.forEach(item=>{
                         let contentType
@@ -385,7 +396,8 @@ export default {
                 msgList.push({
                     role: 'sys',
                     contentType: 'text',
-                    content: this.$ak.Utils.getDateTimeStr(msg.createTime, 'Y-m-d H:i:s')
+                    content: this.$ak.Utils.getDateTimeStr(msg.createTime, 'Y-m-d H:i:s'),
+                    createTime: this.$ak.Utils.getDateTimeStr(msg.createTime, 'Y-m-d H:i:s')
                 });
                 this.$data.chatInfoEn.lastMsgShowTime = msg.createTime;
             }
@@ -459,24 +471,6 @@ export default {
                     }
                 }
             });
-            // var msg = rs.msg;
-            // msg.role = 'client';
-            // msg.avatarUrl = this.$data.clientChatEn.avatarUrl;
-            // if (this.$data.chatInfoEn.chatState == 'robot') {
-            //     // 机器人发送接口
-            // } else if (this.$data.chatInfoEn.chatState == 'agent') {
-            //     // 客服接口
-            //     this.$data.socket.emit('CLIENT_SEND_MSG', {
-            //         serverChatId: this.$data.serverChatEn.serverChatId,
-            //         clientChatEn: this.$data.clientChatEn,
-            //         msg: msg
-            //     });
-            // }
-            // // 2.添加到消息集合李
-            // var self = this;
-            // this.addChatMsg(msg, function() {
-            //     self.goEnd();
-            // });
         },
 
         /**

@@ -12,7 +12,7 @@
         </header>
         <main class="main">
             <div v-if="storeCurrentChatEnlist.length>0" class="item-list">
-                <div class="item" v-for="(tmpEn, index) in storeCurrentChatEnlist" :key="index" @click="selectChat(tmpEn)" v-bind:class="{ active: selectedChatEn!=null && tmpEn.client_id==selectedChatEn.client_id}">
+                <div class="item" v-for="(tmpEn, index) in storeCurrentChatEnlist" :key="index" @click="selectChat(tmpEn)" v-bind:class="{ active: selectedChatEn!=null && tmpEn.auth_id==selectedChatEn.auth_id}">
                     <div class="followicon-wrapper">
                         <i class="iconfont icon-zhidingwujiaoxing position-h-v-mid" :class="{ active: tmpEn.isFollow}" @click.stop="toggleFollowIcon(tmpEn)"></i>
                     </div>
@@ -71,9 +71,12 @@ export default {
          * @param {Object} en call实体类
          */
         selectChat: function(en) {
-            this.$store.imServerStore.dispatch('selectChat', { auth_id: en.auth_id });
-            this.$emit('selectedChat', {}); // 事件上传
-            this.$emit('toggleUserList')
+            if(en.auth_id!=this.selectedChatEn.auth_id){
+                console.log(en,this.selectedChatEn);
+                this.$store.imServerStore.dispatch('selectChat', { auth_id: en.auth_id });
+                this.$emit('selectedChat', {}); // 事件上传
+                this.$emit('toggleUserList')
+            }
         },
 
         /**

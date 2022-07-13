@@ -25,7 +25,6 @@ export default {
     },
     data() {
         return {
-            page:1,
         };
     },
     computed: {
@@ -39,14 +38,15 @@ export default {
             return this.$store.imServerStore.getters.serverChatEn;
         }
     },
-    watch: {
-        storeSelectedChatEn(value) {
-            this.$refs.common_chat.goEnd();
-        },
-        storeHaveNewMsgDelegate(value) {
-            this.$refs.common_chat.goEnd();
-        }
-    },
+    // watch: {
+    //     storeSelectedChatEn(value) {
+    //         console.log(value.currentPage);
+    //         this.$refs.common_chat.goEnd();
+    //     },
+    //     storeHaveNewMsgDelegate(value) {
+    //         this.$refs.common_chat.goEnd();
+    //     }
+    // },
     methods: {
         //切换用户列表显示
         toggleUserList(){
@@ -82,60 +82,28 @@ export default {
         },
         //查看历史记录
         history(){
-            //     this.$store.imServerStore.dispatch('get_history',{
-            //     client_id: this.storeSelectedChatEn.client_id
-            // })
             this.$http.get({
                 url: api.history,
                 params:{
                     user_type: this.storeSelectedChatEn.user_type,
                     auth_id:this.storeSelectedChatEn.auth_id,
-                    page:this.page
+                    page:this.storeSelectedChatEn.currentPage+1
                 },
                 successCallback: (res) => {
-                    this.page++
                     if(res.data.data.length==0){
                         this.$message('已全部加载');
                         return false
                         }
-                        this.$store.imServerStore.dispatch('get_history',{
-                            client_id: this.storeSelectedChatEn.client_id,
-                            data:res.data.data
-                        })    
-                    // let data = res.data.data
-                    // data.forEach(item=>{
-                    //     let contentType
-                    //     if(item.msgType == '2'){
-                    //         contentType = 'image'
-                    //     }else if(item.msgType=='5'){
-                    //         contentType = 'file'
-                    //     }else{
-                    //         contentType = 'text'
-                    //     }
-                    //     let role
-                    //     let avatarUrl
-                    //     if(item.msgCategory!=1){
-                    //         role = 'server'
-                    //         avatarUrl = 'static/image/im_client_server.png'
-                    //     }else{
-                    //         avatarUrl = 'static/image/im_client_avatar.png'
-                    //         role = 'client'
-                    //     }
-                    //     let msg={
-                    //             role: role,
-                    //             contentType,
-                    //             avatarUrl,
-                    //             fileUrl:item.msg,
-                    //             content: item.msg,
-                    //             createTime:item.createdAt,
-                    //             state:'success'
-                    //         }
-                    //     context.dispatch('addChatMsg', {
-                    //             auth_id:context.state.selectedChatEn.auth_id,
-                    //             history:true,
-                    //             msg
-                    //         });
-                    // })
+                    this.$store.imServerStore.dispatch('get_history',{
+                        client_id: this.storeSelectedChatEn.client_id,
+                        data:res.data.data,
+                         successCallback: ()=>{
+                            setTimeout(()=>{
+                                this.$store.imServerStore.commit('set_currentPage', res.data.currentPage);  
+                            },500)
+                    }
+                    })
+                      
                 }
             })
         },
