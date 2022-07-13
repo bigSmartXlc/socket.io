@@ -219,6 +219,8 @@ export default {
                                 }
                                 msg.avatarUrl = 'static/image/im_client_avatar.png'
                                 msg.fileUrl = data.msg
+                                msg.content = data.msg
+                                msg.state = 'success'
                              this.addChatMsg(msg, () => {
                                  this.$refs.common_chat.goEnd();
                              });   
@@ -244,10 +246,10 @@ export default {
                     uid:this.header.USERID,
                     token:this.header.token
                 },
-                // headers:this.header.user_type == 'cps-user'?{
-                //     USERID:this.header.USERID,
-                //     token:this.header.token
-                // }:{},
+                headers:this.header.user_type == 'cps-user'?{
+                    USERID:this.header.USERID,
+                    token:this.header.token
+                }:{},
                 successCallback: (res) => {
                     if(res.code==10000){
 
@@ -261,28 +263,50 @@ export default {
                 url: api.history,
                 params:{
                     user_type: this.header.user_type,
-                    auth_id:this.user_obj.auth_id
+                    auth_id:this.user_obj.auth_id,
+                    page:this.carrentPage+1,
                 },
-                // headers:this.header.user_type == 'cps-user'?{
-                //     USERID:this.header.USERID,
-                //     token:this.header.token
-                // }:{},
+                headers:this.header.user_type == 'cps-user'?{
+                    USERID:this.header.USERID,
+                    token:this.header.token
+                }:{},
                 successCallback: (res) => {
                     if(res.code==100000){
-                        //   var msg = {}
-                        // msg.role = 'server'
-                        // if(data.msg_type=='5'){
-                        //     msg.contentType = 'file'
-                        // }else if(data.msg_type == '2'){
-                        //     msg.contentType = 'image'
-                        // }else{
-                        //     msg.contentType = 'text'
-                        // }
-                        // msg.avatarUrl = 'static/image/im_client_avatar.png'
-                        // msg.fileUrl = data.msg
-                        // this.addChatMsg(msg, () => {
-                        //     this.$refs.common_chat.goEnd();
-                        // }); 
+                        if(res.data.data.length==0){
+                            this.$message('已加载完');
+                            return false
+                            }
+                        this.carrentPage = res.data.currentPage
+                        var data = res.data.data
+                        data.forEach(item=>{
+                        let contentType
+                        if(item.msgType == '2'){
+                            contentType = 'image'
+                        }else if(item.msgType=='5'){
+                            contentType = 'file'
+                        }else{
+                            contentType = 'text'
+                        }
+                        let role
+                        let avatarUrl
+                        if(item.msgCategory!=1){
+                            role = 'server'
+                            avatarUrl = 'static/image/im_client_server.png'
+                        }else{
+                            avatarUrl = 'static/image/im_client_avatar.png'
+                            role = 'client'
+                        }
+                        let msg={
+                                role: role,
+                                contentType,
+                                avatarUrl,
+                                fileUrl:item.msg,
+                                content: item.msg,
+                                createTime:item.createdAt,
+                                state:'success'
+                            }
+                        this.addChatMsg(msg,()=>{},true)
+                    })
                     }
                 }
             });
@@ -346,7 +370,7 @@ export default {
          * @param {String} msg.content 消息内容
          * @param {Function} successCallback 添加消息后的回调
          */
-        addChatMsg: function(msg, successCallback) {
+        addChatMsg: function(msg, successCallback,history=false) {
             // 1.设定默认值
             msg.role = msg.role == undefined ? 'sys' : msg.role;
             msg.contentType = msg.contentType == undefined ? 'text' : msg.contentType;
@@ -367,11 +391,13 @@ export default {
             }
 
             // 2)插入消息
-            msgList.push(msg);
+            if(history){
+                msgList.unshift(msg);
+            }else{
+                msgList.push(msg);
+            }
             // 3.设置chat对象相关属性
             this.$data.chatInfoEn.msgList = msgList;
-            console.log(this.$data.chatInfoEn.msgList);
-
             // 4.回调
             successCallback && successCallback();
         },
@@ -399,6 +425,7 @@ export default {
                         }
                         msg.avatarUrl = 'static/image/im_client_avatar.png'
                         msg.fileUrl = rs.data.url
+                        msg.state = 'success'
                         this.addChatMsg(msg, function() {
                             this.goEnd();
                         });

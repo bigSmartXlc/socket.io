@@ -3,8 +3,8 @@
     <div class="imServer-wrapper">
         <main class="imServer-main">
             <im-record :class="{record_show:recordShow}" class="item im-record" @selectedChat="selectedChat()" @toggleUserList = toggleUserList></im-record>
-            <im-chat ref="im_chat" class="item im-chat" @toggleUserList = toggleUserList></im-chat>
-            <div class="user_info">
+            <im-chat v-show="user_info.user_type!=''" ref="im_chat" class="item im-chat" @toggleUserList = toggleUserList></im-chat>
+            <div class="user_info"  v-if="user_info.user_type=='sdk-user'">
                 <el-card class="box-card">
                     <div slot="header" class="clearfix">
                         <span>用户详情</span>
@@ -143,6 +143,35 @@
                 </el-table>
                 </el-card>
             </div>
+            <div class="user_info" v-if="user_info.user_type=='cps-user'">
+                <el-card class="box-card">
+                    <div slot="header" class="clearfix">
+                        <span>代理详情</span>
+                    </div>
+                    <el-row>
+                        <el-col :span="24">
+                            <span class='info_key'> 代理：</span>
+                        {{user_info.name}}
+                        </el-col>
+                        <el-col :span="24">
+                            <span class='info_key'> 渠道名称：</span>
+                        {{user_info.channel}}
+                        </el-col>
+                        <el-col :span="24">
+                            <span class='info_key'>代理等级：</span>
+                            {{user_info.level}}
+                        </el-col>
+                        <el-col :span="24">
+                            <span class='info_key'>平台币余额：</span>
+                            {{user_info.userCoinBalance}}
+                        </el-col>
+                        <el-col :span="24">
+                            <span class='info_key'>手机号码：</span>
+                            {{user_info.mobile}}
+                        </el-col>
+                    </el-row>
+                </el-card>
+            </div>
         </main>
     </div>
 </template>
@@ -181,7 +210,7 @@ export default {
          * 选中了会话
          */
         selectedChat: function() {},
-            getUrlParams(url) {
+        getUrlParams(url) {
             // 通过 ? 分割获取后面的参数字符串
             let urlStr = url.split('?')[1]
             // 创建空对象存储参数
@@ -194,45 +223,6 @@ export default {
                 obj[arr[0]] = arr[1];
             }
             return obj
-        },
-        serve_init(){
-              this.serve_socket = new WebSocket("ws://114.55.211.2:7272")
-            this.serve_socket.onmessage = (res)=>{
-                var data = JSON.parse(res.data)
-                switch(data.type){
-                    case 'init':
-                        http.post({
-                            url: api.kefu_init,
-                            params:{
-                                user_type: 'kefu-user',
-                                client_id: data.client_id,
-                                type: data.type,
-                                uid:1,
-                                token:context.state.header.token
-                            },
-                            successCallback: (res) => {
-                                console.log(res);
-                                if(res.code==10000){
-            
-                                }
-                            }
-                        });
-                        break
-                    case 'say':
-                        break
-                    case 'ask':
-                        console.log(data)
-                        context.dispatch('addChatMsg', {
-                        clientChatId: data.clientChatEn.clientChatId,
-                        msg: {
-                            contentType: 'text',
-                            content: data.msg
-                        }
-                    });
-
-
-                }
-            }
         }
     },
     mounted() {

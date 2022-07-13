@@ -71,7 +71,7 @@ export default {
          * @param {Object} en call实体类
          */
         selectChat: function(en) {
-            this.$store.imServerStore.dispatch('selectChat', { client_id: en.client_id });
+            this.$store.imServerStore.dispatch('selectChat', { auth_id: en.auth_id });
             this.$emit('selectedChat', {}); // 事件上传
             this.$emit('toggleUserList')
         },
@@ -135,6 +135,7 @@ export default {
                 height: 50px;
             }
             .kf-name {
+                margin-left: 10px;
                 font-size: 16px;
             }
         }

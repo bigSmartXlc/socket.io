@@ -11,20 +11,22 @@
         </header>
         <main class="imChat-main">
             <!-- 聊天框区域 -->
-            <common-chat ref="common_chat" :chatInfoEn="storeSelectedChatEn" :oprRoleName="'server'" @sendMsg="sendMsg" @sendFile="sendFile" ></common-chat>
+            <common-chat ref="common_chat" :chatInfoEn="storeSelectedChatEn" :oprRoleName="'server'" @sendMsg="sendMsg" @sendFile="sendFile" @history='history'></common-chat>
         </main>
     </div>
 </template>
 
 <script>
 import commonChat from '@/components/common/common_chat.vue';
-
+import api from '@/api/apilist.js'
 export default {
     components: {
         commonChat: commonChat
     },
     data() {
-        return {};
+        return {
+            page:1,
+        };
     },
     computed: {
         storeSelectedChatEn() {
@@ -71,14 +73,72 @@ export default {
 
             // 2.附加到此chat对象的msg集合里
             this.$store.imServerStore.dispatch('addChatMsg', {
-                client_id: this.storeSelectedChatEn.client_id,
+                auth_id: this.storeSelectedChatEn.auth_id,
                 msg: msg,
                 successCallback: function() {
                     rs.successCallbcak && rs.successCallbcak();
                 }
             });
         },
-
+        //查看历史记录
+        history(){
+            //     this.$store.imServerStore.dispatch('get_history',{
+            //     client_id: this.storeSelectedChatEn.client_id
+            // })
+            this.$http.get({
+                url: api.history,
+                params:{
+                    user_type: this.storeSelectedChatEn.user_type,
+                    auth_id:this.storeSelectedChatEn.auth_id,
+                    page:this.page
+                },
+                successCallback: (res) => {
+                    this.page++
+                    if(res.data.data.length==0){
+                        this.$message('已全部加载');
+                        return false
+                        }
+                        this.$store.imServerStore.dispatch('get_history',{
+                            client_id: this.storeSelectedChatEn.client_id,
+                            data:res.data.data
+                        })    
+                    // let data = res.data.data
+                    // data.forEach(item=>{
+                    //     let contentType
+                    //     if(item.msgType == '2'){
+                    //         contentType = 'image'
+                    //     }else if(item.msgType=='5'){
+                    //         contentType = 'file'
+                    //     }else{
+                    //         contentType = 'text'
+                    //     }
+                    //     let role
+                    //     let avatarUrl
+                    //     if(item.msgCategory!=1){
+                    //         role = 'server'
+                    //         avatarUrl = 'static/image/im_client_server.png'
+                    //     }else{
+                    //         avatarUrl = 'static/image/im_client_avatar.png'
+                    //         role = 'client'
+                    //     }
+                    //     let msg={
+                    //             role: role,
+                    //             contentType,
+                    //             avatarUrl,
+                    //             fileUrl:item.msg,
+                    //             content: item.msg,
+                    //             createTime:item.createdAt,
+                    //             state:'success'
+                    //         }
+                    //     context.dispatch('addChatMsg', {
+                    //             auth_id:context.state.selectedChatEn.auth_id,
+                    //             history:true,
+                    //             msg
+                    //         });
+                    // })
+                }
+            })
+        },
         goEnd: function() {
             this.$refs.common_chat.goEnd();
         },

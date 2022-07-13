@@ -6,9 +6,9 @@
             <div v-if="chatLoaded" class="common_chat-main" id="common_chat_main" ref="common_chat_main">
                 <div class="common_chat-main-content">
                     <div class="inner">
-                        <div class="history">
+                        <div class="history" v-show="chatInfoEn.state=='on'">
                             <div class="history_line">
-                                —————————<span @click="getHistory()">历史记录</span>————————— 
+                                —————————<span @click="getHistory()">点击查看历史记录</span>————————— 
                             </div> 
                         </div>
                         <div v-for="(item ,index) in chatInfoEn.msgList" :key="index">
@@ -24,7 +24,7 @@
                                 <div class="info-wrapper" :class="item.state">
                                     <!-- 头像 -->
                                     <div class="avatar-wrapper">
-                                        <img class="kf-img" :src="item.avatarUrl" />
+                                        <img class="kf-img" :src="item.role=='server'?'../../../static/image/im_server_avatar.png':'../../../static/image/im_client_avatar.png'" />
                                     </div>
                                     <!-- 1)文本类型 -->
                                     <div v-if="item.contentType=='text'" class="item-content common_chat_emoji-wrapper-global">
@@ -42,7 +42,8 @@
                                                 <p class="file-name">{{getFileName(item.fileName)}}</p>
                                                 <div class="file-opr">
                                                     <div v-show="item.state=='success'">
-                                                        <a class="file-download" :href="item.fileUrl" target="_blank" :download="item.fileUrl">下载</a>
+                                                        <!-- <span  class="file-download" @click="triggerADownload(item.fileUrl,item.fileName)">下载</span> -->
+                                                        <a class="file-download" :href="item.fileUrl" target="_blank" :download="item.fileName">打开</a>
                                                     </div>
                                                 </div>
                                             </div>
@@ -89,11 +90,11 @@
                         ></div>
                     </div>
                     <!-- 发送按钮 -->
-                    <el-button type="primary" size="small" class="send-btn" :class="chatInfoEn.state" @click="sendText()">发送</el-button>
+                    <el-button type="primary" size="small" class="send-btn" :disabled ="chatInfoEn.state=='off' || chatInfoEn.state=='end'"  :class="chatInfoEn.state" @click="sendText()">发送</el-button>
                 </div>
                 <!-- 离线 -->
                 <div v-show="chatInfoEn.state=='off' || chatInfoEn.state=='end'" class="off-wrapper">
-                    <span class="content">会话已经结束</span>
+                    <!-- <span class="content">会话已经结束</span> -->
                 </div>
             </div>
         </div>
@@ -151,7 +152,7 @@ export default {
         });
     },
     methods: {
-        //获取历史记录
+        //下载文件
         getHistory(){
             this.$emit('history')
         },
