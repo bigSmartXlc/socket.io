@@ -7,6 +7,7 @@ import Vuex from 'vuex';
 import ak from '@/common/ak.js';
 import http from '@/common/http.js';
 import api from '@/api/apilist.js'
+import { off } from 'node-notifier';
 Vue.use(Vuex);
 export const imServerStore = new Vuex.Store({
     state: {
@@ -235,7 +236,6 @@ export const imServerStore = new Vuex.Store({
                 if (chatEn == null) {
                     return;
                 }
-
                 // 2.extend属性
                 for (var key in payload.extends) {
                     Vue.set(chatEn, key, payload.extends[key]);
@@ -549,12 +549,14 @@ export const imServerStore = new Vuex.Store({
                         });
                         break
                     case 'close':
-                        context.dispatch('extendChatEn', {
-                        auth_id: data.auth_id,
-                        extends: {
-                            state: 'off'
+                        debugger
+                    for (var i = 0; i < context.state.currentChatEnlist.length; i++) {
+                        var tmpEn = context.state.currentChatEnlist[i];
+                        if (tmpEn.client_id == data.client_id) {
+                            Vue.set(tmpEn, 'state', 'off');
+                            break;
                         }
-                    });       
+                    }      
                 }
             }
         },
