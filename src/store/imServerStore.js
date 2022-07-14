@@ -99,16 +99,9 @@ export const imServerStore = new Vuex.Store({
         get_history:function(context,{data,successCallback}){
             data.forEach(item=>{
                 let contentType
-                // if(item.msgType == '2'){
-                //     contentType = 'image'
-                // }else if(item.msgType=='5'){
-                //     contentType = 'file'
-                // }else{
-                //     contentType = 'text'
-                // }
-                if(item.msgType=='5'){
+                if(item.msgType=='2'){
                     contentType = 'file'
-                }else if(item.msgType=='2'){
+                }else if(item.msgType=='5'){
                     contentType = 'image'
                 }else if(item.msgType=='3'){
                     contentType = 'video'
@@ -166,16 +159,9 @@ export const imServerStore = new Vuex.Store({
                 if(!isInit){
                     console.log(newChatEn);
                     let contentType
-                    // if(newChatEn.msg_type == '2'){
-                    //     contentType = 'image'
-                    // }else if(newChatEn.msg_type=='5'){
-                    //     contentType = 'file'
-                    // }else{
-                    //     contentType = 'text'
-                    // }
-                    if(newChatEn.msg_type=='5'){
+                    if(newChatEn.msg_type=='2'){
                         contentType = 'file'
-                    }else if(newChatEn.msg_type=='2'){
+                    }else if(newChatEn.msg_type=='5'){
                         contentType = 'image'
                     }else if(newChatEn.msg_type=='3'){
                         contentType = 'video'
@@ -604,9 +590,9 @@ export const imServerStore = new Vuex.Store({
                     eq.successCallbcak()
                     var msg = {}
                     msg.role = 'server'
-                    if(rs.data.msg_type=='5'){
+                    if(rs.data.msg_type=='2'){
                         msg.contentType = 'file'
-                    }else if(rs.data.msg_type == '2'){
+                    }else if(rs.data.msg_type == '5'){
                         msg.contentType = 'image'
                     }else if(rs.data.msg_type=='3'){
                         msg.contentType = 'video'

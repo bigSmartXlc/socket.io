@@ -210,9 +210,9 @@ export default {
                          if(data.msg){
                                 var msg = {}
                                 msg.role = 'server'
-                                if(data.msg_type=='5'){
+                                if(data.msg_type=='2'){
                                     msg.contentType = 'file'
-                                }else if(data.msg_type == '2'){
+                                }else if(data.msg_type == '5'){
                                     msg.contentType = 'image'
                                 }else if(data.msg_type=='3'){
                                     msg.contentType = 'video'
@@ -436,13 +436,12 @@ export default {
                 params:res.file,
                 successCallback: (rs) => {
                     if(rs.code==100000){
-                        res.successCallbcak()
                         var msg = {}
                         msg.role = 'client'
                         if(rs.data.msg_type == '5'){
-                            msg.contentType = 'file'
-                        }else if(rs.data.msg_type == '2'){
                             msg.contentType = 'image'
+                        }else if(rs.data.msg_type == '2'){
+                            msg.contentType = 'file'
                         }else if(rs.data.msg_type =='3'){
                             msg.contentType = 'video'
                         }else if(rs.data.msg_type == '4'){
@@ -451,8 +450,9 @@ export default {
                         msg.avatarUrl = 'static/image/im_client_avatar.png'
                         msg.fileUrl = rs.data.url
                         msg.state = 'success'
-                        this.addChatMsg(msg, function() {
+                        this.addChatMsg(msg, ()=>{
                             this.goEnd();
+                            res.successCallbcak()
                         });
                     }
                 }

@@ -75,15 +75,14 @@
                         <common-chat-emoji class="item" ref="qqemoji" @select="qqemoji_selectFace"></common-chat-emoji>
                         <el-upload
                             class="upload-demo"
+                            ref="upload"
                             action="none"
                             :fileList ='fileList'
-                            :on-exceed="handleExceed"
                             :on-remove="handleRemove"
                             :on-change="handleChange"
                             :show-file-list="false"
                             :on-preview="downloadFile"
                             :auto-upload="false"
-                            :limit="1"
                         >
                             <i class="iconfont fa fa-file-o" style="font-size:18px;color:#aaa"></i>
                         </el-upload>
@@ -413,19 +412,6 @@ export default {
             e.stopPropagation();
             e.preventDefault();
         },
-
-        /**
-         * 文件上传_点击
-         */
-        // fileUpload_click: function (fileType) {
-        //     document.getElementById('common_chat_opr_fileUpload').value = ''
-        //     document.getElementById('common_chat_opr_fileUpload').onchange = this.fileUpload_change;
-        //     document.getElementById('common_chat_opr_fileUpload').click();
-        // },
-        handleExceed (files, fileList) {
-            this.$message.warning(`当前限制上传1个文件，共选择了 ${fileList.length} 个文件`);
-            this.fileList =[]
-        },
         // 文件列表移除文件时的钩子
         handleRemove (file, fileList) {
         },
@@ -449,6 +435,7 @@ export default {
                 file:formData,
                 successCallbcak: function () {
                     this.fileList =[]
+                    this.$refs.upload.clearFiles();
                 },
             });
         },
@@ -456,41 +443,6 @@ export default {
         downloadFile (file) {
             window.location.href = file.raw // raw二进制文件
         },
-        /**
-         * 文件上传_选中文件
-         */
-        // fileUpload_change: function (e) {
-        //     var fileNameIndex = document.getElementById('common_chat_opr_fileUpload').value.lastIndexOf('\\') + 1;
-        //     var fileName = document.getElementById('common_chat_opr_fileUpload').value.substr(fileNameIndex);
-        //     var extend = fileName.substring(fileName.lastIndexOf('.') + 1);
-        //     // 1.判断有效
-        //     // 1)大小
-        //     if (document.getElementById('common_chat_opr_fileUpload').files[0].size >= 1000 * 1000 * 10) {
-        //         this.$message('文件大小不能超过10M');
-        //         document.getElementById('common_chat_opr_fileUpload').value = '';
-        //         return false;
-        //     }
-
-        //     // 2.文件上传
-        //     let formData = new FormData();
-        //     let file = document.getElementById('common_chat_opr_fileUpload').files[0]
-        //     let msg_type
-        //     if(!/\.(gif|jpg|jpeg|png|GIF|JPG|PNG)$/.test(file.name)){
-        //         msg_type = '5'
-        //     }else{
-        //         msg_type = '2'
-        //     }
-        //     formData.append('msg_type', msg_type);
-        //     formData.append('file', file);
-        //       this.$emit('sendFile', {
-        //         file:formData,
-        //         successCallbcak: function () {
-        //             document.getElementById('common_chat_input').focus();
-        //             self.goEnd();
-        //         },
-        //     });
-        // },
-
         /**
          * qqemoji选中表情
          */
