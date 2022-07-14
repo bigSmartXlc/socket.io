@@ -11,7 +11,7 @@
                     <span v-else-if="chatInfoEn.chatState == 'agent'">您正在与客服{{serverChatEn.serverChatName}}对话</span>
                 </div>
                 <div class="opr-wrapper position-v-mid">
-                    <i class="fa fa-indent sm_Show" @click="toggleRightList()"></i>
+                    <!-- <i class="fa fa-indent sm_Show" @click="toggleRightList()"></i>
                     <el-tooltip content="评分" placement="bottom" effect="light">
                         <i class="fa fa-star-half-full" @click="showRateDialog()"></i>
                     </el-tooltip>
@@ -20,7 +20,7 @@
                     </el-tooltip>
                     <el-tooltip content="结束会话" placement="bottom" effect="light">
                         <i class="fa fa-close" @click="closeChat()"></i>
-                    </el-tooltip>
+                    </el-tooltip> -->
                 </div>
             </header>
             <main class="imClient-main">
@@ -214,6 +214,10 @@ export default {
                                     msg.contentType = 'file'
                                 }else if(data.msg_type == '2'){
                                     msg.contentType = 'image'
+                                }else if(data.msg_type=='3'){
+                                    msg.contentType = 'video'
+                                }else if(data.msg_type=='4'){
+                                    msg.contentType = 'sound'
                                 }else{
                                     msg.contentType = 'text'
                                 }
@@ -265,7 +269,7 @@ export default {
         history(){
             let start_time
             if(this.chatInfoEn.msgList.length>0){
-                start_time = this.chatInfoEn.msgList[0].createTime
+                start_time = this.$ak.Utils.getDateTimeStr(this.chatInfoEn.msgList[0].createTime, 'Y-m-d H:i:s')
             }else{
                 start_time = this.$ak.Utils.getDateTimeStr(new Date(), 'Y-m-d H:i:s')
             }
@@ -290,7 +294,6 @@ export default {
                         // this.carrentPage = res.data.currentPage
                         var data = res.data.data
                         data.forEach(item=>{
-                            console.log(item);
                             let contentType
                          if(item.msgType=='5'){
                             contentType = 'file'
@@ -368,14 +371,14 @@ export default {
          * 结束会话
          */
         closeChat: function() {
-            if (this.$data.chatInfoEn.chatState == 'agent') {
-                this.$data.socket.emit('CLIENT_OFF', {
-                    clientChatEn: this.$data.clientChatEn,
-                    serverChatId: this.$data.serverChatEn.serverChatId
-                });
-                this.$data.socket.close();
-                this.$data.chatInfoEn.state = 'off';
-            }
+            // if (this.$data.chatInfoEn.chatState == 'agent') {
+            //     this.$data.socket.emit('CLIENT_OFF', {
+            //         clientChatEn: this.$data.clientChatEn,
+            //         serverChatId: this.$data.serverChatEn.serverChatId
+            //     });
+            //     this.$data.socket.close();
+            //     this.$data.chatInfoEn.state = 'off';
+            // }
         },
 
         /**
@@ -436,13 +439,13 @@ export default {
                         res.successCallbcak()
                         var msg = {}
                         msg.role = 'client'
-                        if(rs.data.msg_type=='5'){
+                        if(rs.data.msg_type == '5'){
                             msg.contentType = 'file'
                         }else if(rs.data.msg_type == '2'){
                             msg.contentType = 'image'
-                        }else if(rs.data.msg_tupe=='3'){
+                        }else if(rs.data.msg_type =='3'){
                             msg.contentType = 'video'
-                        }else if(rs.data.msg_tupe=='4'){
+                        }else if(rs.data.msg_type == '4'){
                             msg.contentType = 'sound'
                         }
                         msg.avatarUrl = 'static/image/im_client_avatar.png'

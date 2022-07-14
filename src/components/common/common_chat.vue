@@ -50,7 +50,7 @@
                                     </div>
                                      <!-- 4)视频类型 -->
                                     <div v-else-if="item.contentType=='video'" class="item-content">
-                                        <video controls :autoplay="false" width="320" height="165" class="video-js vjs-big-play-centered">
+                                        <video controls :autoplay="false" width="290" height="165" class="video-js vjs-big-play-centered">
                                             <source :src="item.fileUrl">
                                         </video>
                                     </div>
@@ -266,10 +266,8 @@ export default {
             } else {
                 this.$data.selectionRange && this.$data.selectionRange.select();
             }
-
             // 2.表情转换为img
             value = this.getqqemojiEmoji(value);
-
             // 3.聊天框中是否选中了文本，若选中文本将被替换成输入内容
             if (window.getSelection) {
                 var sel, range;

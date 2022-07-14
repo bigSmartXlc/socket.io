@@ -608,9 +608,9 @@ export const imServerStore = new Vuex.Store({
                         msg.contentType = 'file'
                     }else if(rs.data.msg_type == '2'){
                         msg.contentType = 'image'
-                    }else if(rs.data.msg_tupe=='3'){
+                    }else if(rs.data.msg_type=='3'){
                         msg.contentType = 'video'
-                    }else if(rs.data.msg_tupe=='4'){
+                    }else if(rs.data.msg_type=='4'){
                         msg.contentType = 'sound'
                     }
                     msg.avatarUrl = 'static/image/im_client_avatar.png'
