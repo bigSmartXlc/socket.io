@@ -144,7 +144,7 @@
                     </el-table>
                     </el-card>
                 </div>
-                <div v-if="user_info.user_type=='cps-user'"  :key="infoKey">
+                <div v-else-if="user_info.user_type=='cps-user'"  :key="infoKey">
                     <el-card class="box-card">
                         <div slot="header" class="clearfix">
                             <span>代理详情</span>

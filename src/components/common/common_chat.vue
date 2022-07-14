@@ -68,12 +68,25 @@
                     <!-- 表情、文件选择等操作 -->
                     <div class="opr-wrapper">
                         <common-chat-emoji class="item" ref="qqemoji" @select="qqemoji_selectFace"></common-chat-emoji>
-                        <a class="item" href="javascript:void(0)" @click="fileUpload_click('file')">
+                        <!-- <a class="item" href="javascript:void(0)" @click="fileUpload_click('file')">
                             <i class="iconfont fa fa-file-o"></i>
-                        </a>
-                        <form method="post" enctype="multipart/form-data">
+                        </a> -->
+                        <el-upload
+                            class="upload-demo"
+                            action="none"
+                            :on-exceed="handleExceed"
+                            :on-remove="handleRemove"
+                            :on-change="handleChange"
+                            :show-file-list="false"
+                            :on-preview="downloadFile"
+                            :auto-upload="false"
+                            :limit="1"
+                        >
+                            <i class="iconfont fa fa-file-o" style="font-size:18px;color:#aaa"></i>
+                        </el-upload>
+                        <!-- <form method="post" enctype="multipart/form-data">
                             <input type="file" name="uploadFile" id="common_chat_opr_fileUpload" style="display:none;position:absolute;left:0;top:0;width:0%;height:0%;opacity:0;" />
-                        </form>
+                        </form> -->
                     </div>
                     <!-- 聊天输入框 -->
                     <div class="input-wrapper">
@@ -399,30 +412,30 @@ export default {
         /**
          * 文件上传_点击
          */
-        fileUpload_click: function (fileType) {
-            document.getElementById('common_chat_opr_fileUpload').value = ''
-            document.getElementById('common_chat_opr_fileUpload').onchange = this.fileUpload_change;
-            document.getElementById('common_chat_opr_fileUpload').click();
+        // fileUpload_click: function (fileType) {
+        //     document.getElementById('common_chat_opr_fileUpload').value = ''
+        //     document.getElementById('common_chat_opr_fileUpload').onchange = this.fileUpload_change;
+        //     document.getElementById('common_chat_opr_fileUpload').click();
+        // },
+        handleExceed (files, fileList) {
+            this.$message.warning(`当前限制上传1个文件，共选择了 ${fileList.length} 个文件`);
         },
-
-        /**
-         * 文件上传_选中文件
-         */
-        fileUpload_change: function (e) {
-            var fileNameIndex = document.getElementById('common_chat_opr_fileUpload').value.lastIndexOf('\\') + 1;
-            var fileName = document.getElementById('common_chat_opr_fileUpload').value.substr(fileNameIndex);
-            var extend = fileName.substring(fileName.lastIndexOf('.') + 1);
+        // 文件列表移除文件时的钩子
+        handleRemove (file, fileList) {
+        },
+        // 上传文件
+        handleChange (file, fileList) {
             // 1.判断有效
+            document.getElementById('common_chat_input').innerHTML = '';
             // 1)大小
-            if (document.getElementById('common_chat_opr_fileUpload').files[0].size >= 1000 * 1000 * 10) {
-                this.$ak.Msg.toast('文件大小不能超过10M', 'error');
+            if (file.size >= 1000 * 1000 * 10) {
+                this.$message.warning('文件大小不能超过10M');
                 document.getElementById('common_chat_opr_fileUpload').value = '';
                 return false;
             }
 
             // 2.文件上传
             let formData = new FormData();
-            let file = document.getElementById('common_chat_opr_fileUpload').files[0]
             let msg_type
             if(!/\.(gif|jpg|jpeg|png|GIF|JPG|PNG)$/.test(file.name)){
                 msg_type = '5'
@@ -430,15 +443,51 @@ export default {
                 msg_type = '2'
             }
             formData.append('msg_type', msg_type);
-            formData.append('file', file);
+            formData.append('file', file.raw);
               this.$emit('sendFile', {
                 file:formData,
                 successCallbcak: function () {
-                    document.getElementById('common_chat_input').focus();
-                    self.goEnd();
                 },
             });
         },
+        // 下载附件
+        downloadFile (file) {
+            window.location.href = file.raw // raw二进制文件
+        },
+        /**
+         * 文件上传_选中文件
+         */
+        // fileUpload_change: function (e) {
+        //     var fileNameIndex = document.getElementById('common_chat_opr_fileUpload').value.lastIndexOf('\\') + 1;
+        //     var fileName = document.getElementById('common_chat_opr_fileUpload').value.substr(fileNameIndex);
+        //     var extend = fileName.substring(fileName.lastIndexOf('.') + 1);
+        //     // 1.判断有效
+        //     // 1)大小
+        //     if (document.getElementById('common_chat_opr_fileUpload').files[0].size >= 1000 * 1000 * 10) {
+        //         this.$message('文件大小不能超过10M');
+        //         document.getElementById('common_chat_opr_fileUpload').value = '';
+        //         return false;
+        //     }
+
+        //     // 2.文件上传
+        //     let formData = new FormData();
+        //     let file = document.getElementById('common_chat_opr_fileUpload').files[0]
+        //     let msg_type
+        //     if(!/\.(gif|jpg|jpeg|png|GIF|JPG|PNG)$/.test(file.name)){
+        //         msg_type = '5'
+        //     }else{
+        //         msg_type = '2'
+        //     }
+        //     formData.append('msg_type', msg_type);
+        //     formData.append('file', file);
+        //       this.$emit('sendFile', {
+        //         file:formData,
+        //         successCallbcak: function () {
+        //             document.getElementById('common_chat_input').focus();
+        //             self.goEnd();
+        //         },
+        //     });
+        // },
 
         /**
          * qqemoji选中表情

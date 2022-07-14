@@ -54,7 +54,8 @@ export default {
         },
         sendFile:function(res){
              this.$store.imServerStore.dispatch('sendFile', {
-                file: res.file
+                file: res.file,
+                successCallbcak:res.successCallbcak
             });
         },
         /**

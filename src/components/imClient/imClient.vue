@@ -428,6 +428,7 @@ export default {
                 params:res.file,
                 successCallback: (rs) => {
                     if(rs.code==100000){
+                        res.successCallbcak()
                         var msg = {}
                         msg.role = 'client'
                         if(rs.data.msg_type=='5'){
@@ -441,7 +442,6 @@ export default {
                         this.addChatMsg(msg, function() {
                             this.goEnd();
                         });
-                        rs.successCallbcak()
                     }
                 }
             });

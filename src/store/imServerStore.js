@@ -153,6 +153,7 @@ export const imServerStore = new Vuex.Store({
                 }
                 // 2)增加消息
                 if(!isInit){
+                    console.log(newChatEn);
                     let contentType
                     if(newChatEn.msg_type == '2'){
                         contentType = 'image'
@@ -173,7 +174,11 @@ export const imServerStore = new Vuex.Store({
                     context.dispatch('extendChatEn', {
                         auth_id: newChatEn.auth_id,
                         extends: {
-                            state: 'on'
+                            state: 'on',
+                            zyim_id:newChatEn.zyim_id,
+                            type:newChatEn.type,
+                            kefu_id:newChatEn.kefu_id,
+                            client_id:newChatEn.client_id
                         }
                     });
                 }
@@ -337,6 +342,7 @@ export const imServerStore = new Vuex.Store({
                     },
                     successCallback: (res) => {
                         if(res.code==100000){
+                            context.state.user_info = {}
                             var obj = {user_type:chatEn.user_type}
                             Object.assign(context.state.user_info,res.data,obj)
                         }
@@ -570,6 +576,7 @@ export const imServerStore = new Vuex.Store({
             params:file,
             successCallback: (rs) => {
                 if(rs.code==100000){
+                    eq.successCallbcak()
                     var msg = {}
                     msg.role = 'server'
                     if(rs.data.msg_type=='5'){

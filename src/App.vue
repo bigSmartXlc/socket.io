@@ -5,8 +5,14 @@
 </template>
 
 <script>
+import VConsole from 'vconsole'
 export default {
-    name: 'App'
+    name: 'App',
+    mounted(){
+        // 添加手机端调试工具
+    // eslint-disable-next-line no-unused-vars
+    const vconsole = new VConsole()
+    }
 };
 </script>
 
