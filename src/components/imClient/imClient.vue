@@ -290,11 +290,16 @@ export default {
                         // this.carrentPage = res.data.currentPage
                         var data = res.data.data
                         data.forEach(item=>{
-                        let contentType
-                        if(item.msgType == '2'){
-                            contentType = 'image'
-                        }else if(item.msgType=='5'){
+                            console.log(item);
+                            let contentType
+                         if(item.msgType=='5'){
                             contentType = 'file'
+                        }else if(item.msgType=='2'){
+                            contentType = 'image'
+                        }else if(item.msgType=='3'){
+                            contentType = 'video'
+                        }else if(item.msgType=='4'){
+                            contentType = 'sound'
                         }else{
                             contentType = 'text'
                         }
@@ -435,6 +440,10 @@ export default {
                             msg.contentType = 'file'
                         }else if(rs.data.msg_type == '2'){
                             msg.contentType = 'image'
+                        }else if(rs.data.msg_tupe=='3'){
+                            msg.contentType = 'video'
+                        }else if(rs.data.msg_tupe=='4'){
+                            msg.contentType = 'sound'
                         }
                         msg.avatarUrl = 'static/image/im_client_avatar.png'
                         msg.fileUrl = rs.data.url

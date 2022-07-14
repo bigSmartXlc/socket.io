@@ -11,7 +11,7 @@ export default {
     mounted(){
         // 添加手机端调试工具
     // eslint-disable-next-line no-unused-vars
-    const vconsole = new VConsole()
+    // const vconsole = new VConsole()
     }
 };
 </script>

@@ -10,6 +10,27 @@ ak.Base_URL = location.host;
  * 包含：类型判断
  */
 ak.Utils = {
+    /* 判断文件类型*/
+    fileType(filePath){
+        //获取最后一个.的位置
+        var index= filePath.lastIndexOf(".");
+        //获取后缀
+        var ext = filePath.substr(index+1);
+    
+        //判断是否是视频类型
+        if(['mp4','avi','mov','rmvb','rm','flv','3gp'].indexOf(ext.toLowerCase()) != -1){
+            return '3';
+        }
+        //判断是否是图片类型
+        if(['png', 'jpg', 'jpeg', 'bmp', 'gif', 'webp', 'psd', 'svg', 'tiff'].indexOf(ext.toLowerCase()) != -1){
+            return '5';
+        }
+        //判断是否是音频类型
+        if(['cda','wav','mp3','wmv','flac','aac'].indexOf(ext.toLowerCase()) != -1){
+            return '4';
+        }
+        return '2';
+    },
     /**
      * 是否为JSON字符串
      * @param {String}

@@ -99,10 +99,21 @@ export const imServerStore = new Vuex.Store({
         get_history:function(context,{data,successCallback}){
             data.forEach(item=>{
                 let contentType
-                if(item.msgType == '2'){
-                    contentType = 'image'
-                }else if(item.msgType=='5'){
+                // if(item.msgType == '2'){
+                //     contentType = 'image'
+                // }else if(item.msgType=='5'){
+                //     contentType = 'file'
+                // }else{
+                //     contentType = 'text'
+                // }
+                if(item.msgType=='5'){
                     contentType = 'file'
+                }else if(item.msgType=='2'){
+                    contentType = 'image'
+                }else if(item.msgType=='3'){
+                    contentType = 'video'
+                }else if(item.msgType=='4'){
+                    contentType = 'sound'
                 }else{
                     contentType = 'text'
                 }
@@ -155,10 +166,21 @@ export const imServerStore = new Vuex.Store({
                 if(!isInit){
                     console.log(newChatEn);
                     let contentType
-                    if(newChatEn.msg_type == '2'){
-                        contentType = 'image'
-                    }else if(newChatEn.msg_type=='5'){
+                    // if(newChatEn.msg_type == '2'){
+                    //     contentType = 'image'
+                    // }else if(newChatEn.msg_type=='5'){
+                    //     contentType = 'file'
+                    // }else{
+                    //     contentType = 'text'
+                    // }
+                    if(newChatEn.msg_type=='5'){
                         contentType = 'file'
+                    }else if(newChatEn.msg_type=='2'){
+                        contentType = 'image'
+                    }else if(newChatEn.msg_type=='3'){
+                        contentType = 'video'
+                    }else if(newChatEn.msg_type=='4'){
+                        contentType = 'sound'
                     }else{
                         contentType = 'text'
                     }
@@ -287,6 +309,9 @@ export const imServerStore = new Vuex.Store({
                 chatEn.msgList = msgList;
                 chatEn.lastMsgTime = msg.createTime;
                 switch (msg.contentType) {
+                    case 'video':
+                        chatEn.lastMsgContent = "[视频]";
+                        break;
                     case 'text':
                         chatEn.lastMsgContent = msg.content;
                         break;
@@ -583,6 +608,10 @@ export const imServerStore = new Vuex.Store({
                         msg.contentType = 'file'
                     }else if(rs.data.msg_type == '2'){
                         msg.contentType = 'image'
+                    }else if(rs.data.msg_tupe=='3'){
+                        msg.contentType = 'video'
+                    }else if(rs.data.msg_tupe=='4'){
+                        msg.contentType = 'sound'
                     }
                     msg.avatarUrl = 'static/image/im_client_avatar.png'
                     msg.fileUrl = rs.data.url

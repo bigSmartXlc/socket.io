@@ -42,14 +42,19 @@
                                                 <p class="file-name">{{getFileName(item.fileName)}}</p>
                                                 <div class="file-opr">
                                                     <div v-show="item.state=='success'">
-                                                        <!-- <span  class="file-download" @click="triggerADownload(item.fileUrl,item.fileName)">下载</span> -->
                                                         <a class="file-download" :href="item.fileUrl" target="_blank" :download="item.fileName">打开</a>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                    <!-- 4)文本类型 -->
+                                     <!-- 4)视频类型 -->
+                                    <div v-else-if="item.contentType=='video'" class="item-content">
+                                        <video controls :autoplay="false" width="320" height="165" class="video-js vjs-big-play-centered">
+                                            <source :src="item.fileUrl">
+                                        </video>
+                                    </div>
+                                    <!-- 5)文本类型 -->
                                     <div v-if="item.contentType=='transformServer'" class="item-content common_chat_emoji-wrapper-global">
                                         <p class="text">
                                             当前没有配置机器人，
@@ -68,12 +73,10 @@
                     <!-- 表情、文件选择等操作 -->
                     <div class="opr-wrapper">
                         <common-chat-emoji class="item" ref="qqemoji" @select="qqemoji_selectFace"></common-chat-emoji>
-                        <!-- <a class="item" href="javascript:void(0)" @click="fileUpload_click('file')">
-                            <i class="iconfont fa fa-file-o"></i>
-                        </a> -->
                         <el-upload
                             class="upload-demo"
                             action="none"
+                            :fileList ='fileList'
                             :on-exceed="handleExceed"
                             :on-remove="handleRemove"
                             :on-change="handleChange"
@@ -84,9 +87,6 @@
                         >
                             <i class="iconfont fa fa-file-o" style="font-size:18px;color:#aaa"></i>
                         </el-upload>
-                        <!-- <form method="post" enctype="multipart/form-data">
-                            <input type="file" name="uploadFile" id="common_chat_opr_fileUpload" style="display:none;position:absolute;left:0;top:0;width:0%;height:0%;opacity:0;" />
-                        </form> -->
                     </div>
                     <!-- 聊天输入框 -->
                     <div class="input-wrapper">
@@ -126,6 +126,8 @@
 <script>
 import common_chat_emoji from './common_chat_emoji.vue';
 import api from '@/api/apilist.js'
+import Video from 'video.js'
+import 'video.js/dist/video-js.css'
 export default {
     components: {
         commonChatEmoji: common_chat_emoji,
@@ -154,6 +156,7 @@ export default {
             imgViewDialogVisible: false, // 图片查看dialog的显示
             imgViewDialog_imgSrc: '', // 图片查看dialog的图片地址
             chatLoaded: false, // chat是否已加载完毕
+            fileList:[]
         };
     },
     computed: {},
@@ -166,6 +169,10 @@ export default {
     },
     methods: {
         //下载文件
+        triggerADownload(url){
+            console.log(url);
+            this.$ak.Utils.getFile(url)
+        },
         getHistory(){
             this.$emit('history')
         },
@@ -419,6 +426,7 @@ export default {
         // },
         handleExceed (files, fileList) {
             this.$message.warning(`当前限制上传1个文件，共选择了 ${fileList.length} 个文件`);
+            this.fileList =[]
         },
         // 文件列表移除文件时的钩子
         handleRemove (file, fileList) {
@@ -436,17 +444,13 @@ export default {
 
             // 2.文件上传
             let formData = new FormData();
-            let msg_type
-            if(!/\.(gif|jpg|jpeg|png|GIF|JPG|PNG)$/.test(file.name)){
-                msg_type = '5'
-            }else{
-                msg_type = '2'
-            }
+            let msg_type = this.$ak.Utils.fileType(file.name)
             formData.append('msg_type', msg_type);
             formData.append('file', file.raw);
               this.$emit('sendFile', {
                 file:formData,
                 successCallbcak: function () {
+                    this.fileList =[]
                 },
             });
         },

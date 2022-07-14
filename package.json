@@ -12,6 +12,7 @@
     "dependencies": {
         "karma-chai": "^0.1.0",
         "vconsole": "^3.14.6",
+        "video.js": "^7.19.2",
         "vue": "^2.5.2",
         "vue-router": "^3.0.1"
     },
