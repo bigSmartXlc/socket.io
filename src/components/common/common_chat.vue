@@ -549,6 +549,7 @@ export default {
         height: 100%;
         .common_chat-main {
             position: relative;
+            min-height: 170px;
             height: calc(~'100% - 190px');
             overflow-y: auto;
             overflow-x: hidden;

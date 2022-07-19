@@ -626,7 +626,7 @@ export default {
     }
     .imClient-main {
         max-width: 100%;
-        height: 520px;
+        min-height: 520px;
         position: relative;
         & > .item {
             float: left;
