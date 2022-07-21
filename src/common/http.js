@@ -3,8 +3,9 @@ import axios from 'axios';
 import ak from '@/common/ak.js';
 
 var axiosInstance = axios.create({
+    // baseURL: 'http://admin-new.zyh5games.com',
     baseURL: 'http://xlwys.zyh5games.com',
-    timeout: 1000 * 5
+    timeout: 300000
 });
 
 axiosInstance.interceptors.request.use(
@@ -45,7 +46,9 @@ var http = {
                 opts.res = res.data;
                 httpResponseHandle.call(opts);
             })
-            .catch(function(err) {});
+            .catch(function(err) {
+                ak.Msg.alert(err.message)
+            });
     },
 
     /**
@@ -69,7 +72,9 @@ var http = {
                 opts.res = res.data;
                 httpResponseHandle.call(opts);
             })
-            .catch(function(err) {});
+            .catch(function(err) {
+                // ak.Msg.alert(err.message)
+            });
     },
 
     /**

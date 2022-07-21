@@ -1,3 +1,4 @@
+import {  Message } from 'element-ui'
 /**
  * 工具模块，不依赖第三方代码
  */
@@ -777,7 +778,9 @@ ak.Msg = {
      * 提示框
      * msg {string} ：信息内容
      */
-    alert: function(msg) {},
+    alert: function(msg) {
+        Message.error(msg)
+    },
 
     /**
      * 确认框

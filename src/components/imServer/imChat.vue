@@ -38,15 +38,14 @@ export default {
             return this.$store.imServerStore.getters.serverChatEn;
         }
     },
-    // watch: {
-    //     storeSelectedChatEn(value) {
-    //         console.log(value.currentPage);
-    //         this.$refs.common_chat.goEnd();
-    //     },
-    //     storeHaveNewMsgDelegate(value) {
-    //         this.$refs.common_chat.goEnd();
-    //     }
-    // },
+    watch: {
+        storeSelectedChatEn(value) {
+            this.$refs.common_chat.goEnd();
+        },
+        storeHaveNewMsgDelegate(value) {
+            this.$refs.common_chat.goEnd();
+        }
+    },
     methods: {
         //切换用户列表显示
         toggleUserList(){
@@ -76,19 +75,25 @@ export default {
             this.$store.imServerStore.dispatch('addChatMsg', {
                 auth_id: this.storeSelectedChatEn.auth_id,
                 msg: msg,
-                successCallback: function() {
-                    rs.successCallbcak && rs.successCallbcak();
+                successCallback: ()=> {
+                    this.goEnd()
                 }
             });
         },
         //查看历史记录
         history(){
+            let start_time
+            if(this.storeSelectedChatEn.msgList.length>0){
+                start_time = this.$ak.Utils.getDateTimeStr(this.storeSelectedChatEn.msgList[0].createTime, 'Y-m-d H:i:s')
+            }else{
+                start_time = this.$ak.Utils.getDateTimeStr(new Date(), 'Y-m-d H:i:s')
+            }
             this.$http.get({
                 url: api.history,
                 params:{
                     user_type: this.storeSelectedChatEn.user_type,
                     auth_id:this.storeSelectedChatEn.auth_id,
-                    page:this.storeSelectedChatEn.currentPage+1
+                    start_time
                 },
                 successCallback: (res) => {
                     if(res.data.data.length==0){

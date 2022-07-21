@@ -17,7 +17,7 @@ export const imServerStore = new Vuex.Store({
         },
         serverChatEn: {
             serverChatId: Number.parseInt(Date.now() + Math.random()),
-            serverChatName: '指悦-小悦',
+            serverChatName: '指悦-客服',
             avatarUrl: '/static/image/im_server_avatar.png'
         },
         selectedChatEn: {
@@ -158,7 +158,6 @@ export const imServerStore = new Vuex.Store({
                 }
                 // 2)增加消息
                 if(!isInit){
-                    console.log(newChatEn);
                     let contentType
                     if(newChatEn.msg_type=='2'){
                         contentType = 'file'
@@ -487,7 +486,6 @@ export const imServerStore = new Vuex.Store({
                 var data = JSON.parse(res.data)
                 switch(data.type){
                     case 'init':
-                        console.log(data);
                         http.post({
                             url: api.kefu_init,
                             params:{
@@ -495,13 +493,20 @@ export const imServerStore = new Vuex.Store({
                                 client_id: data.client_id,
                                 type: data.type,
                                 uid:context.state.header.uid,
-                                // uid:1,
                                 token:context.state.header.token
                             },
                             successCallback: (res) => {
                                 if(res.code==100000){
-                                    if(res.data.length>0){
-                                        res.data.forEach(item=>{
+                                    const {avatorUrl,name} = res.data.kefuInfo
+                                    if(name){
+                                        context.state.serverChatEn.serverChatName = name
+                                    }
+                                    if(avatorUrl){
+                                        console.log(avatorUrl);
+                                        context.state.serverChatEn.avatarUrl = avatorUrl
+                                    }
+                                    if(res.data.historyUserLists.length>0){
+                                        res.data.historyUserLists.forEach(item=>{
                                             let clientChatName
                                             let user_type
                                             if(item.user_type==1){
@@ -524,6 +529,8 @@ export const imServerStore = new Vuex.Store({
                                             });
                                         })
                                     }
+                                }else{
+                                    this.$message.error(res.message)
                                 }
                             }
                         });
@@ -549,7 +556,6 @@ export const imServerStore = new Vuex.Store({
                         });
                         break
                     case 'close':
-                        debugger
                     for (var i = 0; i < context.state.currentChatEnlist.length; i++) {
                         var tmpEn = context.state.currentChatEnlist[i];
                         if (tmpEn.client_id == data.client_id) {
@@ -589,7 +595,6 @@ export const imServerStore = new Vuex.Store({
             params:file,
             successCallback: (rs) => {
                 if(rs.code==100000){
-                    eq.successCallbcak()
                     var msg = {}
                     msg.role = 'server'
                     if(rs.data.msg_type=='2'){
