@@ -542,14 +542,13 @@ export default {
     overflow: hidden;
     position: relative;
     font-size: 12px;
-    float: left;
     border: 0px;
     .common_chat-inner {
         width: 100%;
         height: 100%;
         .common_chat-main {
             position: relative;
-            min-height: 170px;
+            min-height: 35vh;
             height: calc(~'100% - 190px');
             overflow-y: auto;
             overflow-x: hidden;

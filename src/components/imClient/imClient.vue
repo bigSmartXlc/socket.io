@@ -206,6 +206,9 @@ export default {
                         break
                     case 'say':
                          this.user_obj = JSON.parse(JSON.stringify(data))
+                         if(this.header.user_type=='visitor'){
+                             this.$ak.Utils.setCookie('USERID',this.user_obj.auth_id)
+                         }
                          this.chatInfoEn.state = 'on'
                          if(data.msg){
                                 var msg = {}
@@ -568,18 +571,22 @@ export default {
         },
         //获取url参数
         getUrlParams(url) {
-            // 通过 ? 分割获取后面的参数字符串
-            let urlStr = url.split('?')[1]
-            // 创建空对象存储参数
-            let obj = {};
-            // 再通过 & 将每一个参数单独分割出来
-            let paramsArr = urlStr.split('&')
-            for(let i = 0,len = paramsArr.length;i < len;i++){
-                // 再通过 = 将每一个参数分割为 key:value 的形式
-                let arr = paramsArr[i].split('=')
-                obj[arr[0]] = arr[1];
+            if(url.indexOf('?')>0){
+                // 通过 ? 分割获取后面的参数字符串
+                let urlStr = url.split('?')[1]
+                // 创建空对象存储参数
+                let obj = {};
+                // 再通过 & 将每一个参数单独分割出来
+                let paramsArr = urlStr.split('&')
+                for(let i = 0,len = paramsArr.length;i < len;i++){
+                    // 再通过 = 将每一个参数分割为 key:value 的形式
+                    let arr = paramsArr[i].split('=')
+                    obj[arr[0]] = arr[1];
+                }
+                return obj
+            }else{
+                return null
             }
-            return obj
         },
         playAudio() {
             this.$refs.tipsplay.play()
@@ -594,6 +601,11 @@ export default {
             this.header.USERID=parames.uid
             this.header.token=parames.token
             this.header.user_type=parames.user_type
+        }else{
+            this.header.user_type='visitor'
+            if(this.$ak.Utils.getCookie('USERID')){
+                this.header.USERID=this.$ak.Utils.getCookie('USERID')
+            }
         }
         this.reg_ws()
     }

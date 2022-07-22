@@ -169,11 +169,16 @@ export default {
         font-size: 16px;
         .jinyan_btn{
             border:solid 1px #238de4;
+            background-color:#238de4;
             border-radius: 5px;
             margin-right: 15px;
             vertical-align:baseline;
             min-width:140px;
             padding-left: 10px;
+            /deep/ .el-input__inner{
+                background: transparent;
+                color: white;
+            }
             img{
                 margin-top: 12px;
                 margin-right:5px
