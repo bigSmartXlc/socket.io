@@ -61,7 +61,7 @@
                         </div>
                         <el-table
                         :data="user_info.rolesList.data"
-                        height="270"
+                        height="300"
                         style="width: 100%">
                         <el-table-column
                             prop="gameName"
@@ -101,7 +101,7 @@
                         </div>
                         <el-table
                         :data="user_info.loginLogsList.data"
-                        height="270"
+                        height="300"
                         style="width: 100%">
                         <el-table-column
                             prop="gameName"
@@ -183,6 +183,7 @@ import imRecord from './imRecord.vue';
 import imChat from './imChat.vue';
 
 export default {
+    options: { styleIsolation: 'shared' },
     components: {
         imRecord: imRecord,
         imChat: imChat

@@ -287,7 +287,6 @@ export const imServerStore = new Vuex.Store({
                     return;
                 }
                 // 1.设定默认值
-                console.log(msg);
                 msg.createTime = msg.createTime == undefined ? new Date() : msg.createTime;
                 msg.avatarUrl='/static/image/im_client_avatar.png'
                 var msgList = chatEn.msgList ? chatEn.msgList : [];
@@ -297,7 +296,6 @@ export const imServerStore = new Vuex.Store({
                 // 实际场景中，在消息上方是否显示时间是由后台传递给前台的消息中附加上的，可参考 微信Web版
                 // 此处进行手动设置，5分钟之内的消息，只显示一次消息
                 msg.createTime = new Date(msg.createTime);
-                console.log(msg);
                 if (chatEn.lastMsgShowTime == null || msg.createTime.getTime() - chatEn.lastMsgShowTime.getTime() > 1000 * 60 * 5) {
                     msgList.push({
                         role: 'sys',
@@ -532,7 +530,6 @@ export const imServerStore = new Vuex.Store({
                                         context.state.serverChatEn.serverChatName = name
                                     }
                                     if(avatorUrl){
-                                        console.log(avatorUrl);
                                         context.state.serverChatEn.avatarUrl = avatorUrl
                                     }
                                     if(res.data.historyUserLists.length>0){
