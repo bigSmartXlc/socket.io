@@ -3,11 +3,24 @@
     <div class="imChat-wrapper">
         <!-- 头部 -->
         <header class="imChat-header">
-            <i class="fa fa-indent sm_Show" style="margin-right:15px" @click="toggleUserList()"></i>
-            <span class="name">{{storeSelectedChatEn.clientChatName}}</span>
-            <span class="time">{{getAccessTimeStr(storeSelectedChatEn.accessTime)}}</span>
-            <span v-show="storeSelectedChatEn.state=='on' " class="on-line">在线</span>
-            <span v-show="storeSelectedChatEn.state=='off' " class="off-line ">离线</span>
+            <div>
+                <i class="fa fa-indent sm_Show" style="margin-right:15px" @click="toggleUserList()"></i>
+                <span class="name">{{storeSelectedChatEn.clientChatName}}</span>
+                <!-- <span class="time">{{getAccessTimeStr(storeSelectedChatEn.accessTime)}}</span> -->
+                <span v-show="storeSelectedChatEn.state=='on' " class="on-line">在线</span>
+                <span v-show="storeSelectedChatEn.state=='off' " class="off-line ">离线</span>
+            </div>
+            <div class="jinyan_btn" style="">
+                <el-select v-model="user_cf" placeholder="用户状态" class="user_cf">
+                    <el-option
+                    v-for="(key,value) in state_option"
+                    :key="value"
+                    :label="key"
+                    :value="value">
+                    </el-option>
+                </el-select>
+                <img v-show="user_cf!='NONE'" src="../../../static/image/jinggao.png" width="15px"/>
+            </div>
         </header>
         <main class="imChat-main">
             <!-- 聊天框区域 -->
@@ -28,6 +41,17 @@ export default {
         };
     },
     computed: {
+        user_cf:{
+            get(){
+                return this.$store.imServerStore.getters.user_cf
+            },
+            set(val){
+                this.$store.imServerStore.dispatch('reset_user_cf',{user_cf:val})
+            }
+        },
+        state_option(){
+            return this.$store.imServerStore.getters.state_option;
+        },
         storeSelectedChatEn() {
             return this.$store.imServerStore.getters.selectedChatEn;
         },
@@ -125,10 +149,9 @@ export default {
             return this.$ak.Utils.getDateTimeStr(accessTime, 'Y-m-d H:i:s');
         }
     },
-    mounted() {}
 };
 </script>
-<style lang="less">
+<style lang="less" scoped>
 @media screen and (min-width:550px) {
     .sm_Show{
         display: none !important;
@@ -137,12 +160,25 @@ export default {
 .imChat-wrapper {
     .imChat-header {
         display: flex;
+        justify-content: space-between;
         align-items: center;
         width: 100%;
         height: 50px;
         padding-left: 10px;
         border-bottom: 1px solid #e6e6e6;
         font-size: 16px;
+        .jinyan_btn{
+            border:solid 1px #238de4;
+            border-radius: 5px;
+            margin-right: 15px;
+            vertical-align:baseline;
+            min-width:140px;
+            padding-left: 10px;
+            img{
+                margin-top: 12px;
+                margin-right:5px
+            }
+        }
         span {
             margin-right: 20px;
         }
@@ -151,6 +187,15 @@ export default {
         }
         .off-line {
             color: #bbbbbb;
+        }
+        .user_cf{
+            float: right;
+            margin-right: 10px;
+            width: 110px;
+        }
+        /deep/ .el-input__inner{
+            padding: 0 !important;
+            border: none !important;
         }
     }
     .imChat-main {

@@ -8,5 +8,6 @@ export default {
     //客服端查询用户信息
     user_info:'/v3/zyim/kefu/info',
     //聊天历史记录
-    history:'/v3/zyim/msg/history'
+    history:'/v3/zyim/msg/history',
+    black:'/v3/zyim/kefu/black'
 }

@@ -11,6 +11,7 @@ import { off } from 'node-notifier';
 Vue.use(Vuex);
 export const imServerStore = new Vuex.Store({
     state: {
+        state_option:{},
         header:null,
         user_info:{
             user_type:'',
@@ -32,6 +33,11 @@ export const imServerStore = new Vuex.Store({
         socket: null
     },
     mutations: {
+        set_user_cf(state,val){
+            var obj = JSON.parse(JSON.stringify(state.user_info))
+            state.user_info = Object.assign(obj,{user_cf:val})
+            // state.user_info.user_cf = val
+        },
         set_currentPage(state,data){
             state.selectedChatEn.currentPage = data
         },
@@ -94,6 +100,23 @@ export const imServerStore = new Vuex.Store({
         }
     },
     actions: {
+        /*
+            禁言状态修改
+        */
+       reset_user_cf:function(context,{user_cf}){
+        http.post({
+            url: api.black,
+            params:{
+                type:user_cf,
+                auth_id:context.state.selectedChatEn.auth_id
+            },
+            successCallback: (res) => {
+                if(res.code==100000){
+                    context.commit('set_user_cf',user_cf);
+                }
+            }
+        });
+       },
          /**
          * 获取历史记录
          */
@@ -264,6 +287,7 @@ export const imServerStore = new Vuex.Store({
                     return;
                 }
                 // 1.设定默认值
+                console.log(msg);
                 msg.createTime = msg.createTime == undefined ? new Date() : msg.createTime;
                 msg.avatarUrl='/static/image/im_client_avatar.png'
                 var msgList = chatEn.msgList ? chatEn.msgList : [];
@@ -273,11 +297,13 @@ export const imServerStore = new Vuex.Store({
                 // 实际场景中，在消息上方是否显示时间是由后台传递给前台的消息中附加上的，可参考 微信Web版
                 // 此处进行手动设置，5分钟之内的消息，只显示一次消息
                 msg.createTime = new Date(msg.createTime);
+                console.log(msg);
                 if (chatEn.lastMsgShowTime == null || msg.createTime.getTime() - chatEn.lastMsgShowTime.getTime() > 1000 * 60 * 5) {
                     msgList.push({
                         role: 'sys',
                         contentType: 'text',
-                        content: ak.Utils.getDateTimeStr(msg.createTime, 'H:i'),
+                        createTime:ak.Utils.getDateTimeStr(msg.createTime, 'Y-m-d H:i:s'),
+                        content: ak.Utils.getDateTimeStr(msg.createTime, 'Y-m-d H:i:s'),
                         avatarUrl:'/static/image/im_client_avatar.png'
                     });
                     chatEn.lastMsgShowTime = msg.createTime;
@@ -353,8 +379,12 @@ export const imServerStore = new Vuex.Store({
                     successCallback: (res) => {
                         if(res.code==100000){
                             context.state.user_info = {}
-                            var obj = {user_type:chatEn.user_type}
-                            Object.assign(context.state.user_info,res.data,obj)
+                            var obj = {
+                                user_type:chatEn.user_type,
+                                user_cf:res.data.blackStatus
+                            }
+                            Object.assign(context.state.user_info,res.data.userInfo,obj)
+                            context.state.state_option = res.data.blackSelect
                         }
                     }
                 });
@@ -637,6 +667,18 @@ export const imServerStore = new Vuex.Store({
         }
     },
     getters: {
+        /*
+        用户禁言状态列表
+        */
+        state_option:function(state){
+            return state.state_option
+        },
+        /*
+            用户禁言状态
+        */
+        user_cf:function(state){
+            return state.user_info.user_cf
+        },
           /**
          * 用户信息
          */

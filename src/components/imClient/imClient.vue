@@ -435,7 +435,7 @@ export default {
                 url: api.ws_chat,
                 params:res.file,
                 successCallback: (rs) => {
-                    if(rs.code==100000){
+                    if(rs.code==100000||rs.code==110007){
                         var msg = {}
                         msg.role = 'client'
                         if(rs.data.msg_type == '5'){
@@ -474,6 +474,17 @@ export default {
                 successCallback: (res) => {
                     if(res.code==100000){
                         var msg = rs.msg
+                        msg.role = 'client'
+                        msg.avatarUrl = 'static/image/im_client_avatar.png'
+                        rs.successCallbcak()
+                        this.addChatMsg(msg, function() {
+                            this.goEnd();
+                        });
+                    }
+                },
+                failCallback:(res)=>{
+                    if(res.code==110007){
+                           var msg = rs.msg
                         msg.role = 'client'
                         msg.avatarUrl = 'static/image/im_client_avatar.png'
                         rs.successCallbcak()
