@@ -5,7 +5,7 @@
             <im-record :class="{record_show:recordShow}" class="item im-record" @selectedChat="selectedChat()" @toggleUserList = toggleUserList></im-record>
             <im-chat v-show="user_info.user_type!=''" ref="im_chat" class="item im-chat" @toggleUserList = toggleUserList></im-chat>
             <div  class="user_info">
-                <div v-if="user_info.user_type=='sdk-user'">
+                <div v-if="user_info.user_type=='sdk-user'" class="sdk_info">
                     <el-card class="box-card">
                         <div slot="header" class="clearfix">
                             <span>用户详情</span>
@@ -281,20 +281,23 @@ export default {
         max-width: 100%;
         position: relative;
         & > .item {
+            box-sizing: border-box;
             float: left;
             border-right: 1px solid #e6e6e6;
             height: 100%;
         }
         & > .im-record {
+            box-sizing: border-box;
             width: 280px;
         }
         & > .im-chat {
-            width: calc(~'38% - 140px');
+            box-sizing: border-box;
+            width: calc(~'40% - 140px');
         }
         &>.user_info{
             display: inline-block;
             width: calc(~'60% - 140px');
-            height: 100%;
+            height: 100vh;
             .info_key{
                 display: inline-block;
                 width: 120px;
@@ -302,6 +305,12 @@ export default {
                 text-align: justify;
                 text-justify:distribute-all-lines; // 这行必加，兼容ie浏览器
                 text-align-last: justify;
+            }
+            .sdk_info{
+                display: flex;
+                height: 100vh;
+                flex-direction: column;
+                justify-content: space-around;
             }
         }
     }
