@@ -3,8 +3,8 @@ import axios from 'axios';
 import ak from '@/common/ak.js';
 
 var axiosInstance = axios.create({
-    // baseURL: 'http://admin-new.zyh5games.com',
-    baseURL: 'http://xlwys.zyh5games.com',
+    baseURL: 'http://admin-new.zyh5games.com',
+    // baseURL: 'http://xlwys.zyh5games.com',
     timeout: 300000
 });
 
