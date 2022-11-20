@@ -539,17 +539,15 @@ export default {
 .common_chat-wrapper {
     width: 100%;
     height: 100%;
-    overflow: hidden;
     position: relative;
     font-size: 12px;
-    border: 0px;
+    border: 0px;    
     .common_chat-inner {
         width: 100%;
         height: 100%;
         .common_chat-main {
             position: relative;
-            min-height: 35vh;
-            height: calc(~'100% - 190px');
+            height: 60%;
             overflow-y: auto;
             overflow-x: hidden;
             .common_chat-main-header {
@@ -624,7 +622,7 @@ export default {
                                 font-size: 13px;
                                 border-radius: 3px;
                                 .text {
-                                    line-height: 1.8;
+                                    // line-height: 1.8;
                                     white-space: normal;
                                     word-wrap: break-word;
                                     word-break: break-all;
@@ -790,12 +788,12 @@ export default {
                                 border: 1px solid #ccc;
                                 &::before {
                                     position: absolute;
-                                    top: -1px;
+                                    top: 10px;
                                     left: -10px;
                                     width: 0px;
                                     height: 0px;
                                     content: '';
-                                    border-top: 0px;
+                                    border-top: 5px solid transparent;
                                     border-right: 10px solid #ccc;
                                     border-bottom: 5px solid transparent;
                                     border-left: 0px;
@@ -813,20 +811,20 @@ export default {
                             float: right;
                             .item-content {
                                 float: right;
-                                background: #0095ff;
-                                border: 1px solid #0095ff;
+                                background: #35d863;
+                                border: 1px solid #35d863;
                                 color: #ffffff;
                                 &::before {
                                     position: absolute;
-                                    top: -1px;
+                                    top: 10px;
                                     right: -10px;
                                     width: 0px;
                                     height: 0px;
                                     content: '';
-                                    border-top: 0px;
+                                    border-top: 5px solid transparent;
                                     border-right: 0px;
                                     border-bottom: 5px solid transparent;
-                                    border-left: 10px solid #0095ff;
+                                    border-left: 10px solid #35d863;
                                 }
                             }
                         }
@@ -837,7 +835,14 @@ export default {
         .common_chat-footer {
             position: relative;
             width: 100%;
+            height: 40%;
             border-top: 1px solid #ccc;
+            &:after{
+                content:"";
+                display:block;
+                visibility:hidden;
+                clear:both;
+            }
             .opr-wrapper {
                 height: 20px;
                 padding: 10px;
@@ -912,8 +917,9 @@ export default {
                 }
             }
             .send-btn {
-                float: right;
-                margin-right: 16px;
+                position: absolute;
+                bottom: 15px;
+                right: 15px;
                 &.off,
                 &.end {
                     background-color: #ccc;

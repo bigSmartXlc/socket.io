@@ -168,16 +168,18 @@ export default {
         border-bottom: 1px solid #e6e6e6;
         font-size: 16px;
         .jinyan_btn{
-            border:solid 1px #238de4;
-            background-color:#238de4;
+            // border:solid 1px #238de4;
+            // background-color:#238de4;
             border-radius: 5px;
             margin-right: 15px;
             vertical-align:baseline;
             min-width:140px;
-            padding-left: 10px;
             /deep/ .el-input__inner{
                 background: transparent;
-                color: white;
+                text-align: right;
+                padding-right: 30px !important;
+                max-width: 120px;
+                // color: white;
             }
             img{
                 margin-top: 12px;
@@ -189,14 +191,15 @@ export default {
         }
         .on-line {
             color: #70ed3a;
+            font-size: 12px;
         }
         .off-line {
             color: #bbbbbb;
+            font-size: 12px;
         }
         .user_cf{
             float: right;
-            margin-right: 10px;
-            width: 110px;
+            min-width: 110px;
         }
         /deep/ .el-input__inner{
             padding: 0 !important;

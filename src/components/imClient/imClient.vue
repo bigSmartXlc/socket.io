@@ -8,36 +8,31 @@
             <header class="imClient-header">
                 <div class="name-wrapper position-v-mid">
                     <span v-if="chatInfoEn.chatState == 'robot'">在线客服-访客端</span>
-                    <span v-else-if="chatInfoEn.chatState == 'agent'">您正在与客服{{serverChatEn.serverChatName}}对话</span>
+                    <span v-else-if="chatInfoEn.chatState == 'agent'">您正在与客服{{ serverChatEn.serverChatName }}对话</span>
                 </div>
                 <div class="opr-wrapper position-v-mid">
                     <!-- <i class="fa fa-indent sm_Show" @click="toggleRightList()"></i>
-                    <el-tooltip content="评分" placement="bottom" effect="light">
-                        <i class="fa fa-star-half-full" @click="showRateDialog()"></i>
-                    </el-tooltip>
-                    <el-tooltip content="留言" placement="bottom" effect="light">
-                        <i class="fa fa-envelope-o" @click="showLeaveDialog()"></i>
-                    </el-tooltip>
-                    <el-tooltip content="结束会话" placement="bottom" effect="light">
-                        <i class="fa fa-close" @click="closeChat()"></i>
-                    </el-tooltip> -->
+                        <el-tooltip content="评分" placement="bottom" effect="light">
+                            <i class="fa fa-star-half-full" @click="showRateDialog()"></i>
+                        </el-tooltip>
+                        <el-tooltip content="留言" placement="bottom" effect="light">
+                            <i class="fa fa-envelope-o" @click="showLeaveDialog()"></i>
+                        </el-tooltip>
+                        <el-tooltip content="结束会话" placement="bottom" effect="light">
+                            <i class="fa fa-close" @click="closeChat()"></i>
+                        </el-tooltip> -->
                 </div>
             </header>
             <main class="imClient-main">
                 <!-- 聊天框 -->
                 <div class="item imClientChat-wrapper">
                     <!-- 聊天记录 -->
-                    <common-chat ref="common_chat" 
-                    :chatInfoEn="chatInfoEn" 
-                    :oprRoleName=" 'client'" 
-                    @sendMsg="sendMsg" 
-                    @sendFile="sendFile" 
-                    @history="history" 
-                    @chatCallback="chatCallback">
+                    <common-chat ref="common_chat" :chatInfoEn="chatInfoEn" :oprRoleName="'client'" @sendMsg="sendMsg"
+                        @sendFile="sendFile" @history="history" @chatCallback="chatCallback">
                     </common-chat>
                 </div>
                 <!-- 信息区域 -->
-                <div class="item imClientInfo-wrapper" :class="{record_show:recordShow}">
+                <div class="item imClientInfo-wrapper" :class="{ record_show: recordShow }">
                     <article class="imClientInfo-notice-wrapper">
                         <header class="imClientInfo-item-header">
                             公告
@@ -48,7 +43,8 @@
                                 <a href="https://github.com/polk6/vue-im" target="_blank">github.com/polk6/vue-im</a>
                             </p>
                             <p class="link">blog：
-                                <a href="https://www.cnblogs.com/polk6/p/vue-im.html" target="_blank">cnblogs.com/polk6/p/vue-im.html</a>
+                                <a href="https://www.cnblogs.com/polk6/p/vue-im.html"
+                                    target="_blank">cnblogs.com/polk6/p/vue-im.html</a>
                             </p>
                         </main>
                     </article>
@@ -59,7 +55,8 @@
                         </header>
                         <main class="imClientInfo-faq-main">
                             <el-collapse v-model="faqSelected" accordion>
-                                <el-collapse-item v-for="(faqItem, index) in faqList" :key="index" :name="index" :title="faqItem.title">
+                                <el-collapse-item v-for="(faqItem, index) in faqList" :key="index" :name="index"
+                                    :title="faqItem.title">
                                     <div v-html="faqItem.content"></div>
                                 </el-collapse-item>
                             </el-collapse>
@@ -107,10 +104,10 @@ export default {
     },
     data() {
         return {
-            ws:null,
-            header:{},
-            user_obj:{},
-            recordShow:false,
+            ws: null,
+            header: {},
+            user_obj: {},
+            recordShow: false,
             socket: null,
             chatInfoEn: {
                 chatState: 'agent', // chat状态；robot 机器人、agent 客服
@@ -153,13 +150,13 @@ export default {
     watch: {},
     methods: {
         //切换右侧信息
-        toggleRightList(){
+        toggleRightList() {
             this.recordShow = !this.recordShow
         },
         /**
          * 注册账号信息
          */
-        regClientChatEn: function() {
+        regClientChatEn: function () {
             this.$data.clientChatEn.clientChatId = Number.parseInt(Date.now() + Math.random());
             // 名称格式：姓+6位数字
             var userName = '';
@@ -196,144 +193,144 @@ export default {
          * 注册socket
          * @param {String} serverChatId 服务端chatId
          */
-        reg_ws(){
+        reg_ws() {
             this.ws = new WebSocket("ws://114.55.211.2:7272")
-            this.ws.onmessage = (res)=>{
+            this.ws.onmessage = (res) => {
                 var data = JSON.parse(res.data)
-                switch(data.type){
+                switch (data.type) {
                     case 'init':
                         this.can_say(data)
                         break
                     case 'say':
-                         this.user_obj = JSON.parse(JSON.stringify(data))
-                         if(this.header.user_type=='visitor'){
-                             this.$ak.Utils.setCookie('USERID',this.user_obj.auth_id)
-                         }
-                         this.chatInfoEn.state = 'on'
-                         if(data.msg){
-                                var msg = {}
-                                msg.role = 'server'
-                                if(data.msg_type=='2'){
-                                    msg.contentType = 'file'
-                                }else if(data.msg_type == '5'){
-                                    msg.contentType = 'image'
-                                }else if(data.msg_type=='3'){
-                                    msg.contentType = 'video'
-                                }else if(data.msg_type=='4'){
-                                    msg.contentType = 'sound'
-                                }else{
-                                    msg.contentType = 'text'
-                                }
-                                msg.avatarUrl = 'static/image/im_client_avatar.png'
-                                msg.fileUrl = data.msg
-                                msg.content = data.msg
-                                msg.state = 'success'
-                             this.addChatMsg(msg, () => {
-                                 this.$refs.common_chat.goEnd();
-                             });   
-                         }
-                         break
+                        this.user_obj = JSON.parse(JSON.stringify(data))
+                        if (this.header.user_type == 'visitor') {
+                            this.$ak.Utils.setCookie('USERID', this.user_obj.auth_id)
+                        }
+                        this.chatInfoEn.state = 'on'
+                        if (data.msg) {
+                            var msg = {}
+                            msg.role = 'server'
+                            if (data.msg_type == '2') {
+                                msg.contentType = 'file'
+                            } else if (data.msg_type == '5') {
+                                msg.contentType = 'image'
+                            } else if (data.msg_type == '3') {
+                                msg.contentType = 'video'
+                            } else if (data.msg_type == '4') {
+                                msg.contentType = 'sound'
+                            } else {
+                                msg.contentType = 'text'
+                            }
+                            msg.avatarUrl = 'static/image/im_client_avatar.png'
+                            msg.fileUrl = data.msg
+                            msg.content = data.msg
+                            msg.state = 'success'
+                            this.addChatMsg(msg, () => {
+                                this.$refs.common_chat.goEnd();
+                            });
+                        }
+                        break
                     case 'stop':
                         console.log(data);
-                         this.$message(data.msg);
-                         break     
-                                
+                        this.$message(data.msg);
+                        break
+
                 }
             }
 
             //监听离开页面断开连接
             window.addEventListener('beforeunload', () => {
-                    this.closeChat();
+                this.closeChat();
             });
         },
         //查询是否客服是否连通
         can_say(data) {
             this.$http.post({
                 url: api.ws_init,
-                params:{
+                params: {
                     user_type: this.header.user_type,
                     client_id: data.client_id,
                     type: data.type,
-                    uid:this.header.USERID,
-                    token:this.header.token
+                    uid: this.header.USERID,
+                    token: this.header.token
                 },
-                headers:this.header.user_type == 'cps-user'?{
-                    USERID:this.header.USERID,
-                    token:this.header.token
-                }:{},
+                headers: this.header.user_type == 'cps-user' ? {
+                    USERID: this.header.USERID,
+                    token: this.header.token
+                } : {},
                 successCallback: (res) => {
-                    if(res.code==10000){
+                    if (res.code == 10000) {
 
                     }
                 }
             });
         },
         // 获取用户聊天记录
-        history(){
+        history() {
             let start_time
-            if(this.chatInfoEn.msgList.length>0){
+            if (this.chatInfoEn.msgList.length > 0) {
                 start_time = this.$ak.Utils.getDateTimeStr(this.chatInfoEn.msgList[0].createTime, 'Y-m-d H:i:s')
-            }else{
+            } else {
                 start_time = this.$ak.Utils.getDateTimeStr(new Date(), 'Y-m-d H:i:s')
             }
-             this.$http.get({
+            this.$http.get({
                 url: api.history,
-                params:{
+                params: {
                     user_type: this.header.user_type,
-                    auth_id:this.user_obj.auth_id,
+                    auth_id: this.user_obj.auth_id,
                     // page:this.carrentPage+1,
                     start_time
                 },
-                headers:this.header.user_type == 'cps-user'?{
-                    USERID:this.header.USERID,
-                    token:this.header.token
-                }:{},
+                headers: this.header.user_type == 'cps-user' ? {
+                    USERID: this.header.USERID,
+                    token: this.header.token
+                } : {},
                 successCallback: (res) => {
-                    if(res.code==100000){
-                        if(res.data.data.length==0){
+                    if (res.code == 100000) {
+                        if (res.data.data.length == 0) {
                             this.$message('已加载完');
                             return false
-                            }
+                        }
                         // this.carrentPage = res.data.currentPage
                         var data = res.data.data
-                        data.forEach(item=>{
+                        data.forEach(item => {
                             let contentType
-                         if(item.msgType=='5'){
-                            contentType = 'file'
-                        }else if(item.msgType=='2'){
-                            contentType = 'image'
-                        }else if(item.msgType=='3'){
-                            contentType = 'video'
-                        }else if(item.msgType=='4'){
-                            contentType = 'sound'
-                        }else{
-                            contentType = 'text'
-                        }
-                        let role
-                        let avatarUrl
-                        if(item.msgCategory!=1){
-                            role = 'server'
-                            avatarUrl = 'static/image/im_client_server.png'
-                        }else{
-                            avatarUrl = 'static/image/im_client_avatar.png'
-                            role = 'client'
-                        }
-                        let msg={
+                            if (item.msgType == '5') {
+                                contentType = 'file'
+                            } else if (item.msgType == '2') {
+                                contentType = 'image'
+                            } else if (item.msgType == '3') {
+                                contentType = 'video'
+                            } else if (item.msgType == '4') {
+                                contentType = 'sound'
+                            } else {
+                                contentType = 'text'
+                            }
+                            let role
+                            let avatarUrl
+                            if (item.msgCategory != 1) {
+                                role = 'server'
+                                avatarUrl = 'static/image/im_client_server.png'
+                            } else {
+                                avatarUrl = 'static/image/im_client_avatar.png'
+                                role = 'client'
+                            }
+                            let msg = {
                                 role: role,
                                 contentType,
                                 avatarUrl,
-                                fileUrl:item.msg,
+                                fileUrl: item.msg,
                                 content: item.msg,
-                                createTime:item.createdAt,
-                                state:'success'
+                                createTime: item.createdAt,
+                                state: 'success'
                             }
-                        this.addChatMsg(msg,()=>{},true)
-                    })
+                            this.addChatMsg(msg, () => { }, true)
+                        })
                     }
                 }
             });
         },
-        regSocket: function(serverChatId) {
+        regSocket: function (serverChatId) {
             his.$data.socket = require('socket.io-client')('http://localhost:3001');
             this.$data.socket.on('connect', () => {
                 // 客户端上线
@@ -373,7 +370,7 @@ export default {
         /**
          * 结束会话
          */
-        closeChat: function() {
+        closeChat: function () {
             // if (this.$data.chatInfoEn.chatState == 'agent') {
             //     this.$data.socket.emit('CLIENT_OFF', {
             //         clientChatEn: this.$data.clientChatEn,
@@ -392,7 +389,7 @@ export default {
          * @param {String} msg.content 消息内容
          * @param {Function} successCallback 添加消息后的回调
          */
-        addChatMsg: function(msg, successCallback,history=false) {
+        addChatMsg: function (msg, successCallback, history = false) {
             // 1.设定默认值
             msg.role = msg.role == undefined ? 'sys' : msg.role;
             msg.contentType = msg.contentType == undefined ? 'text' : msg.contentType;
@@ -414,9 +411,9 @@ export default {
             }
 
             // 2)插入消息
-            if(history){
+            if (history) {
                 msgList.unshift(msg);
-            }else{
+            } else {
                 msgList.push(msg);
             }
             // 3.设置chat对象相关属性
@@ -424,36 +421,36 @@ export default {
             // 4.回调
             successCallback && successCallback();
         },
-          /**
-         * 文件上传
-         * @param {Object} rs 回调对象
-         */
-        sendFile:function(res){
+        /**
+       * 文件上传
+       * @param {Object} rs 回调对象
+       */
+        sendFile: function (res) {
             res.file.append('auth_id', this.user_obj.auth_id);
-            res.file.append('client_id',  this.user_obj.client_id);
-            res.file.append('type',  this.user_obj.type);
+            res.file.append('client_id', this.user_obj.client_id);
+            res.file.append('type', this.user_obj.type);
             res.file.append('user_type', this.header.user_type);
             res.file.append('msg', '');
-                this.$http.uploadFile({
+            this.$http.uploadFile({
                 url: api.ws_chat,
-                params:res.file,
+                params: res.file,
                 successCallback: (rs) => {
-                    if(rs.code==100000||rs.code==110007){
+                    if (rs.code == 100000 || rs.code == 110007) {
                         var msg = {}
                         msg.role = 'client'
-                        if(rs.data.msg_type == '5'){
+                        if (rs.data.msg_type == '5') {
                             msg.contentType = 'image'
-                        }else if(rs.data.msg_type == '2'){
+                        } else if (rs.data.msg_type == '2') {
                             msg.contentType = 'file'
-                        }else if(rs.data.msg_type =='3'){
+                        } else if (rs.data.msg_type == '3') {
                             msg.contentType = 'video'
-                        }else if(rs.data.msg_type == '4'){
+                        } else if (rs.data.msg_type == '4') {
                             msg.contentType = 'sound'
                         }
                         msg.avatarUrl = 'static/image/im_client_avatar.png'
                         msg.fileUrl = rs.data.url
                         msg.state = 'success'
-                        this.addChatMsg(msg, ()=>{
+                        this.addChatMsg(msg, () => {
                             this.goEnd();
                             res.successCallbcak()
                         });
@@ -465,33 +462,33 @@ export default {
          * 发送消息
          * @param {Object} rs 回调对象
          */
-        sendMsg: function(rs) {
-                this.$http.post({
+        sendMsg: function (rs) {
+            this.$http.post({
                 url: api.ws_chat,
-                params:{
+                params: {
                     ...this.user_obj,
                     user_type: this.header.user_type,//cps/sdk/kefu/visitor
                     msg: rs.msg.content,
                     msg_type: 1 //1文本2文件3视频4音频5其他
                 },
                 successCallback: (res) => {
-                    if(res.code==100000){
+                    if (res.code == 100000) {
                         var msg = rs.msg
                         msg.role = 'client'
                         msg.avatarUrl = 'static/image/im_client_avatar.png'
                         rs.successCallbcak()
-                        this.addChatMsg(msg, function() {
+                        this.addChatMsg(msg, function () {
                             this.goEnd();
                         });
                     }
                 },
-                failCallback:(res)=>{
-                    if(res.code==110007){
-                           var msg = rs.msg
+                failCallback: (res) => {
+                    if (res.code == 110007) {
+                        var msg = rs.msg
                         msg.role = 'client'
                         msg.avatarUrl = 'static/image/im_client_avatar.png'
                         rs.successCallbcak()
-                        this.addChatMsg(msg, function() {
+                        this.addChatMsg(msg, function () {
                             this.goEnd();
                         });
                     }
@@ -502,7 +499,7 @@ export default {
         /**
          * 显示转接客服Dialog
          */
-        transferDialog_show: function() {
+        transferDialog_show: function () {
             this.$data.transferDialogVisible = true;
             this.$nextTick(() => {
                 this.$refs.im_transfer.init();
@@ -512,7 +509,7 @@ export default {
         /**
          * 转接客服dialog_提交
          */
-        transferDialog_submit: function(rs) {
+        transferDialog_submit: function (rs) {
             this.$data.transferDialogVisible = false;
             this.$data.chatInfoEn.chatState = 'agent';
             this.regSocket(rs.serverChatId);
@@ -521,7 +518,7 @@ export default {
         /**
          * 注销dialog_提交
          */
-        logoutDialog_submit: function() {
+        logoutDialog_submit: function () {
             this.$data.logoutDialogVisible = false;
             this.addChatMsg({
                 role: 'sys',
@@ -532,21 +529,21 @@ export default {
         /**
          * 注销dialog_取消
          */
-        logoutDialog_cancel: function() {
+        logoutDialog_cancel: function () {
             this.$data.logoutDialogVisible = false;
         },
 
         /**
          * 聊天记录滚动到底部
          */
-        goEnd: function() {
+        goEnd: function () {
             this.$refs.common_chat.goEnd();
         },
 
         /**
          * chat回调
          */
-        chatCallback: function(rs) {
+        chatCallback: function (rs) {
             // if (rs.eventType == 'transformServer') {
             //     this.transferDialog_show();
             // }
@@ -554,7 +551,7 @@ export default {
         /**
          * 显示评分dialog
          */
-        showRateDialog: function() {
+        showRateDialog: function () {
             this.$data.rateDialogVisible = true;
             this.$nextTick(() => {
                 this.$refs.im_rate.init();
@@ -563,7 +560,7 @@ export default {
         /**
          * 显示留言dialog
          */
-        showLeaveDialog: function() {
+        showLeaveDialog: function () {
             this.$data.leaveDialogVisible = true;
             this.$nextTick(() => {
                 this.$refs.im_leave.init();
@@ -571,20 +568,20 @@ export default {
         },
         //获取url参数
         getUrlParams(url) {
-            if(url.indexOf('?')>0){
+            if (url.indexOf('?') > 0) {
                 // 通过 ? 分割获取后面的参数字符串
                 let urlStr = url.split('?')[1]
                 // 创建空对象存储参数
                 let obj = {};
                 // 再通过 & 将每一个参数单独分割出来
                 let paramsArr = urlStr.split('&')
-                for(let i = 0,len = paramsArr.length;i < len;i++){
+                for (let i = 0, len = paramsArr.length; i < len; i++) {
                     // 再通过 = 将每一个参数分割为 key:value 的形式
                     let arr = paramsArr[i].split('=')
                     obj[arr[0]] = arr[1];
                 }
                 return obj
-            }else{
+            } else {
                 return null
             }
         },
@@ -597,14 +594,14 @@ export default {
         // this.regSocket()
         //获取URL参数
         let parames = this.getUrlParams(window.location.href)
-        if(parames){
-            this.header.USERID=parames.uid
-            this.header.token=parames.token
-            this.header.user_type=parames.user_type
-        }else{
-            this.header.user_type='visitor'
-            if(this.$ak.Utils.getCookie('USERID')){
-                this.header.USERID=this.$ak.Utils.getCookie('USERID')
+        if (parames) {
+            this.header.USERID = parames.uid
+            this.header.token = parames.token
+            this.header.user_type = parames.user_type
+        } else {
+            this.header.user_type = 'visitor'
+            if (this.$ak.Utils.getCookie('USERID')) {
+                this.header.USERID = this.$ak.Utils.getCookie('USERID')
             }
         }
         this.reg_ws()
@@ -614,7 +611,11 @@ export default {
 
 <style lang="less">
 @import '../../common/css/base.less';
+
 .imClient-wrapper {
+    min-height: 375px;
+    height: 100%;
+    max-height: 700px;
     #common-wrapper();
 }
 
@@ -624,6 +625,7 @@ export default {
     margin: 0 auto;
     overflow: hidden;
     box-shadow: 0 1px 5px 2px #ccc;
+
     .imClient-header {
         position: relative;
         height: 35px;
@@ -631,49 +633,67 @@ export default {
         background: #1072b5;
         font-size: 13px;
         color: #ffffff;
+
         .name-wrapper {
             margin-left: 20px;
         }
+
         .logo {
             height: 45px;
             width: auto;
         }
+
         .opr-wrapper {
             right: 20px;
             font-size: 16px;
             cursor: pointer;
+
             .fa {
                 margin-left: 10px;
             }
         }
     }
+
     .imClient-main {
         max-width: 100%;
-        min-height: 520px;
-        position: relative;
-        & > .item {
+        height: calc(~'100% - 35px');
+        padding-bottom: 20px;
+
+        // position: relative;
+        &:after {
+            content: "";
+            display: block;
+            visibility: hidden;
+            clear: both;
+        }
+
+        &>.item {
             float: left;
             height: 100%;
             border-top-width: 0px;
             border-right-width: 0px;
             box-sizing: border-box;
+
             &:last-child {
                 border-right-width: 1px;
             }
         }
-        & > .imClientChat-wrapper {
+
+        &>.imClientChat-wrapper {
             // max-width: 550px;
             width: 100%;
             border-right: 1px solid #ccc;
         }
-        & > .imClientInfo-wrapper {
-        //    width: 300px;
-        display: none;
+
+        &>.imClientInfo-wrapper {
+            //    width: 300px;
+            display: none;
         }
     }
 }
+
 @media only screen and (max-width: 550px) {
-    .imClientInfo-wrapper{
+    .imClientInfo-wrapper {
         position: fixed;
         width: 0 !important;
         z-index: 1000;
@@ -682,23 +702,28 @@ export default {
         right: 0;
         top: 0;
     }
-    .record_show{
+
+    .record_show {
         // width: 300px !important;
     }
+
     .imClient-main {
         height: 95vh !important
     }
 }
+
 @media screen and (min-width:550px) {
-     .sm_Show{
+    .sm_Show {
         display: none;
     }
 }
+
 // 信息区域
 .imClientInfo-wrapper {
     width: 100%;
     height: 100%;
     background: #ffffff;
+
     .imClientInfo-notice-wrapper,
     .imClientInfo-faq-wrapper {
         .imClientInfo-item-header {
@@ -706,47 +731,58 @@ export default {
             font-size: 16px;
             color: #1072b5;
             padding: 10px 15px 0;
-            .info_close{
+
+            .info_close {
                 float: right;
                 margin-right: 10px;
             }
         }
     }
+
     .imClientInfo-notice-wrapper {
         .imClientInfo-notice-main {
             padding: 0 15px;
-            & > .link {
+
+            &>.link {
                 margin: 10px 0;
                 font-size: 12px;
                 color: #000000;
             }
         }
     }
+
     .imClientInfo-faq-wrapper {
         height: 380px;
         border-top: 1px solid #ccc;
+
         .imClientInfo-faq-main {
             height: 100%;
             overflow-y: auto;
             overflow-x: hidden;
+
             .el-collapse {
                 border: 0px;
+
                 .el-collapse-item__header {
                     position: relative;
                     padding: 0px 15px;
                     font-size: 12px;
                     background: transparent;
                     color: #000000;
+
                     &.is-active {
                         color: #f7455d;
                     }
+
                     .el-collapse-item__arrow {
                         position: absolute;
                         left: 267px;
                     }
                 }
+
                 .el-collapse-item__wrap {
                     background: transparent;
+
                     .el-collapse-item__content {
                         font-size: 12px;
                         color: #959699;
